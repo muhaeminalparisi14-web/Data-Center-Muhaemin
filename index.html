@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log Perawatan Motor - Muhaemin Alparisi</title>
-    <!-- Menggunakan Tailwind CSS agar tampilan mirip dengan gambar Anda -->
     <script src="https://jsdelivr.net"></script>
 </head>
-<body class="bg-gray-100 font-sans flex">
+<body class="bg-gray-100 font-sans flex" onload="ambilDataDariSpreadsheet()">
 
     <!-- SIDEBAR -->
     <div class="w-64 bg-slate-900 text-white min-h-screen p-6">
@@ -21,13 +20,13 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 p-8 max-w-5xl">
         <h1 class="text-2xl font-bold text-gray-800">Selamat Datang, Muhaemin</h1>
-        <p class="text-sm text-gray-500 mb-6">Berikut data real-time kamu.</p>
+        <p class="text-sm text-gray-500 mb-6">Berikut data riwayat dari Google Spreadsheet kamu.</p>
 
         <!-- FORM UPDATE KM MOTOR -->
         <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 mb-6">
             <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">KM Motor Saat Ini</label>
             <div class="flex gap-4 max-w-md">
-                <input type="number" id="inputKMUtama" placeholder="Contoh: 12500" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="number" id="inputKMUtama" placeholder="Contoh: 12500" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none">
                 <button type="button" onclick="updateKMMotor()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm px-5 py-2 rounded-lg cursor-pointer transition">Update KM</button>
             </div>
         </div>
@@ -38,19 +37,19 @@
             <form id="formSparepart" onsubmit="tambahDataLog(event)" class="grid grid-cols-5 gap-4 items-end">
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Tanggal Beli</label>
-                    <input type="date" id="tglBeli" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="date" id="tglBeli" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Nama Parts</label>
-                    <input type="text" id="namaPart" required placeholder="Oli Mesin" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="namaPart" required placeholder="Oli Mesin" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">KM Ganti</label>
-                    <input type="number" id="kmGanti" required placeholder="15000" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" id="kmGanti" required placeholder="15000" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">Service Kembali (KM)</label>
-                    <input type="number" id="serviceKembali" required placeholder="17000" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" id="serviceKembali" required placeholder="17000" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <div>
                     <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-2 rounded-lg cursor-pointer transition">Tambah Data</button>
@@ -61,17 +60,12 @@
         <!-- TAMPILAN MONITOR KM SAAT INI -->
         <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100 mb-6">
             <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">KM MOTOR SAAT INI</span>
-            <div id="displayKMUtama" class="text-3xl font-black text-gray-900">0 KM</div>
+            <div id="displayKMUtama" class="text-3xl font-black text-gray-900">Memuat...</div>
         </div>
 
         <!-- LOG TABEL PERAWATAN -->
         <div class="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-sm font-bold text-gray-700">Log Perawatan & Sparepart</h3>
-                <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded flex items-center gap-1 cursor-pointer transition">
-                    📊 Download Laporan Excel
-                </button>
-            </div>
+            <h3 class="text-sm font-bold text-gray-700 mb-4">Log Perawatan & Sparepart</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
@@ -85,9 +79,8 @@
                         </tr>
                     </thead>
                     <tbody id="tabelLogBody" class="text-gray-700 divide-y divide-gray-100">
-                        <!-- Data akan otomatis masuk ke sini lewat JavaScript -->
-                        <tr id="barisKosong">
-                            <td colspan="6" class="text-center py-6 text-gray-400 italic">Belum ada data riwayat perawatan.</td>
+                        <tr>
+                            <td colspan="6" class="text-center py-6 text-gray-400 italic">Memuat data dari Spreadsheet...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -95,78 +88,108 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Variabel global untuk menyimpan KM Utama saat ini
+        // GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
+        const API_URL = "https://script.google.com/macros/s/AKfycbyi7zBO2MBDKv0aj223RH8S8Xi0yDzPXNWexz7VdqBipmS3LDVSw6KOGgClAGFcrjk/exec"; 
+        
         let kmMotorSaatIni = 0;
-        let nomorUrut = 1;
 
-        // 1. Fungsi untuk memperbarui tampilan "KM MOTOR SAAT INI"
-        function updateKMMotor() {
-            const inputKM = document.getElementById('inputKMUtama').value;
-            
-            if (inputKM === '' || inputKM < 0) {
-                alert('Silakan masukkan angka KM saat ini yang valid!');
-                return;
+        // 1. FUNGSI AMBIL DATA (GET) DARI SPREADSHEET SAAT WEB DIBUKA
+        async function ambilDataDariSpreadsheet() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                // Set Tampilan KM Utama
+                kmMotorSaatIni = parseInt(data.kmUtama);
+                document.getElementById('displayKMUtama').innerText = kmMotorSaatIni.toLocaleString('id-ID') + ' KM';
+
+                // Set Tampilan Tabel Log
+                const tabelBody = document.getElementById('tabelLogBody');
+                tabelBody.innerHTML = ""; // Bersihkan teks loading
+
+                if (data.logPerawatan.length === 0) {
+                    tabelBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 italic">Belum ada data di Spreadsheet.</td></tr>`;
+                    return;
+                }
+
+                data.logPerawatan.forEach((item, index) => {
+                    const barisBaru = document.createElement('tr');
+                    barisBaru.className = "hover:bg-gray-50 transition";
+                    
+                    let statusTeks = '<span class="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full">Aman</span>';
+                    if (kmMotorSaatIni >= item.kmKembali) {
+                        statusTeks = '<span class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">Waktunya Ganti!</span>';
+                    }
+
+                    // Format tanggal agar rapi
+                    const tglFormat = new Date(item.tanggal).toLocaleDateString('id-ID');
+
+                    barisBaru.innerHTML = `
+                        <td class="py-3 px-4">${index + 1}</td>
+                        <td class="py-3 px-4">${tglFormat}</td>
+                        <td class="py-3 px-4 font-medium">${item.part}</td>
+                        <td class="py-3 px-4">${parseInt(item.kmGanti).toLocaleString('id-ID')} KM</td>
+                        <td class="py-3 px-4">${parseInt(item.kmKembali).toLocaleString('id-ID')} KM</td>
+                        <td class="py-3 px-4">${statusTeks}</td>
+                    `;
+                    tabelBody.appendChild(barisBaru);
+                });
+
+            } catch (error) {
+                console.error("Gagal memuat data:", error);
+                alert("Gagal mengambil data dari Spreadsheet!");
             }
-
-            kmMotorSaatIni = parseInt(inputKM);
-            document.getElementById('displayKMUtama').innerText = kmMotorSaatIni.toLocaleString('id-ID') + ' KM';
-            alert('KM Motor Berhasil Diperbarui!');
         }
 
-        // 2. Fungsi untuk memasukkan data inputan ke dalam tabel Log
-        function tambahDataLog(event) {
-            event.preventDefault(); // Mencegah halaman reload otomatis saat form di-submit
+        // 2. FUNGSI KIRIM DATA (POST) UPDATE KM UTAMA
+        async function updateKMMotor() {
+            const inputKM = document.getElementById('inputKMUtama').value;
+            if (!inputKM || inputKM < 0) return alert('Masukkan angka KM yang valid!');
 
-            // Mengambil nilai input dari form
+            document.getElementById('displayKMUtama').innerText = "Memperbarui...";
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'updateKM', kmUtama: inputKM })
+                });
+                alert('KM Motor sukses tersimpan di Spreadsheet!');
+                ambilDataDariSpreadsheet(); // Refresh data otomatis
+            } catch (error) {
+                alert('Gagal menyimpan data!');
+            }
+        }
+
+        // 3. FUNGSI KIRIM DATA (POST) TAMBAH LOG PERAWATAN
+        async function tambahDataLog(event) {
+            event.preventDefault();
+
             const tgl = document.getElementById('tglBeli').value;
             const part = document.getElementById('namaPart').value;
-            const kmGanti = parseInt(document.getElementById('kmGanti').value);
-            const kmKembali = parseInt(document.getElementById('serviceKembali').value);
+            const kmGanti = document.getElementById('kmGanti').value;
+            const kmKembali = document.getElementById('serviceKembali').value;
 
-            // Validasi Logika: Mencegah input jika KM utama masih 0 atau inputan tidak masuk akal
-            if (kmMotorSaatIni === 0) {
-                alert('Gagal! Perbarui "KM Motor Saat Ini" terlebih dahulu di form atas sebelum menginput riwayat!');
-                return;
+            if (kmMotorSaatIni === 0) return alert('Perbarui KM Motor Utama terlebih dahulu!');
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'tambahLog',
+                        tanggal: tgl,
+                        part: part,
+                        kmGanti: kmGanti,
+                        kmKembali: kmKembali
+                    })
+                });
+
+                alert('Data log sukses masuk ke Spreadsheet!');
+                document.getElementById('formSparepart').reset();
+                ambilDataDariSpreadsheet(); // Refresh data otomatis
+            } catch (error) {
+                alert('Gagal mengirim log perawatan!');
             }
-            if (kmGanti > kmMotorSaatIni) {
-                alert(`Gagal! KM Ganti (${kmGanti}) tidak boleh lebih besar dari KM Motor saat ini (${kmMotorSaatIni})!`);
-                return;
-            }
-
-            // Menghapus baris tulisan "Belum ada data" jika ini data pertama
-            const barisKosong = document.getElementById('barisKosong');
-            if (barisKosong) {
-                barisKosong.remove();
-            }
-
-            // Membuat baris (row) baru untuk tabel HTML
-            const tabelBody = document.getElementById('tabelLogBody');
-            const barisBaru = document.createElement('tr');
-            barisBaru.className = "hover:bg-gray-50 transition";
-
-            // Menentukan status kelayakan service
-            let statusTeks = '<span class="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full">Aman</span>';
-            if (kmMotorSaatIni >= kmKembali) {
-                statusTeks = '<span class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">Waktunya Ganti!</span>';
-            }
-
-            // Menyisipkan kolom data (td) ke dalam baris baru
-            barisBaru.innerHTML = `
-                <td class="py-3 px-4">${nomorUrut++}</td>
-                <td class="py-3 px-4">${tgl.split('-').reverse().join('/')}</td>
-                <td class="py-3 px-4 font-medium">${part}</td>
-                <td class="py-3 px-4">${kmGanti.toLocaleString('id-ID')} KM</td>
-                <td class="py-3 px-4">${kmKembali.toLocaleString('id-ID')} KM</td>
-                <td class="py-3 px-4">${statusTeks}</td>
-            `;
-
-            // Memasukkan baris baru tersebut ke dalam tabel utama
-            tabelBody.appendChild(barisBaru);
-
-            // Reset form input sparepart agar kosong kembali setelah berhasil ditambah
-            document.getElementById('formSparepart').reset();
         }
     </script>
 </body>
