@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA CENTER MUHAEMIN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7fe;
+            color: #1e293b;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background-color: #1e1b4b;
+            color: #ffffff;
+            padding: 2rem 1.5rem;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 3rem;
+            color: #f3f4f6;
+            text-transform: uppercase;
+        }
+
+        .menu-list {
+            list-style: none;
+        }
+
+        .menu-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .menu-link {
+            display: block;
+            padding: 0.8rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .menu-link.active {
+            background-color: #4f46e5;
+            color: #ffffff;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #64748b;
+            margin-top: 0.2rem;
+        }
+
+        /* INPUT FORM SECTION */
+        .input-section {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #4f46e5;
+        }
+
+        .btn-submit {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            height: 43px;
+        }
+
+        .btn-submit:hover {
+            background-color: #4338ca;
+        }
+
+        /* TOMBOL DOWNLOAD EXCEL */
+        .btn-excel {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s ease;
+        }
+
+        .btn-excel:hover {
+            background-color: #15803d;
+        }
+
+        /* KARTU KILOMETER */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* TABEL DATA */
+        .table-section {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .table-header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 800px;
+        }
+
+        th {
+            padding: 1rem;
+            color: #64748b;
+            font-weight: 600;
+            border-bottom: 2px solid #f1f5f9;
+            background-color: #f8fafc;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* Badge Status */
+        .badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-aman {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-ganti {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">Muhaemin<br>Alparisi</div>
+        <ul class="menu-list">
+            <li class="menu-item"><a href="#" class="menu-link active">Data Service</a></li>
+            <li class="menu-item"><a href="#" class="menu-link">Cashflow</a></li>
+        </ul>
+    </aside>
+
+    <!-- Konten Utama -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <h1>Selamat Datang, Muhaemin</h1>
+            <p>Berikut data real-time kamu.</p>
+        </header>
+
+        <!-- Area Input Data -->
+        <section class="input-section">
+            <!-- Input KM Motor -->
+            <div class="form-group">
+                <label for="kmInput">KM Motor Saat Ini</label>
+                <div style="display: flex; gap: 1rem; max-width: 400px;">
+                    <input type="number" id="kmInput" class="form-control" placeholder="Contoh: 12500">
+                    <button class="btn-submit" id="updateKmBtn">Update KM</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
+
+            <!-- Input Data Servis / Parts -->
+            <div class="form-group">
+                <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Riwayat Perbaikan / Pembelian Sparepart</label>
+                <div class="form-grid">
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Tanggal Beli</label>
+                        <input type="date" id="tglBeli" class="form-control">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Nama Parts</label>
+                        <input type="text" id="namaParts" class="form-control" placeholder="Contoh: Oli Mesin">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">KM Ganti</label>
+                        <input type="number" id="kmGanti" class="form-control" placeholder="Contoh: 12000">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Service Kembali (KM)</label>
+                        <input type="number" id="kmKembali" class="form-control" placeholder="Contoh: 14000">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Harga (Rp)</label>
+                        <input type="number" id="hargaParts" class="form-control" placeholder="Contoh: 65000">
+                    </div>
+                    <button class="btn-submit" id="addServiceBtn">Tambah Data</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kartu Statistik Utama -->
+        <section class="card-grid">
+            <div class="card">
+                <div class="card-title">KM Motor Saat Ini</div>
+                <div class="card-value" id="kmDisplay">0 KM</div>
+            </div>
+        </section>
+
+        <!-- Tabel Output Log Servis -->
+        <section class="table-section">
+            <div class="table-header-wrapper">
+                <h2 class="section-title">Log Perawatan & Sparepart</h2>
+                <!-- Tombol Ekspor Data ke Excel -->
+                <button class="btn-excel" id="downloadExcelBtn">
+                    📊 Download Laporan Excel
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table id="serviceTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">No</th>
+                            <th>Tanggal Beli</th>
+                            <th>Parts</th>
+                            <th>KM Ganti</th>
+                            <th>Service Kembali (KM)</th>
+                            <th>Harga</th>
+                            <th>Status</th>
