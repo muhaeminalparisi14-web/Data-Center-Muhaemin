@@ -3,156 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log Perawatan Motor - Muhaemin Alparisi</title>
-    <!-- Menggunakan Tailwind CSS v3 CDN yang stabil untuk browser -->
-    <script src="https://tailwindcss.com"></script>
+    <title>DATA CENTER MUHAEMIN</title>
+    <!-- Library SheetJS untuk Export ke Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7fe;
+            color: #1e293b;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background-color: #1e1b4b;
+            color: #ffffff;
+            padding: 2rem 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 3rem;
+            color: #f3f4f6;
+            text-transform: uppercase;
+        }
+
+        .menu-list {
+            list-style: none;
+        }
+
+        .menu-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .menu-link {
+            display: block;
+            padding: 0.8rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .menu-link.active {
+            background-color: #4f46e5;
+            color: #ffffff;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #64748b;
+            margin-top: 0.2rem;
+        }
+
+        /* INPUT FORM SECTION */
+        .input-section {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #4f46e5;
+        }
+
+        .btn-submit {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            height: 43px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #4338ca;
+        }
+
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .btn-delete:hover {
+            background-color: #dc2626;
+        }
+
+        /* TOMBOL DOWNLOAD EXCEL */
+        .btn-excel {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s ease;
+        }
+
+        .btn-excel:hover {
+            background-color: #15803d;
+        }
+
+        /* KARTU KILOMETER */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* TABEL DATA */
+        .table-section {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .table-header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 800px;
+        }
+
+        th {
+            padding: 1rem;
+            color: #64748b;
+            font-weight: 600;
+            border-bottom: 2px solid #f1f5f9;
+            background-color: #f8fafc;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* Badge Status */
+        .badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-aman {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-ganti {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans flex min-h-screen" onload="ambilDataDariSpreadsheet()">
+<body>
 
-    <!-- SIDEBAR -->
-    <div class="w-64 bg-[#1e1e2f] text-white p-6 flex flex-col shadow-lg">
-        <h2 class="text-xl font-bold tracking-wide uppercase mb-8 leading-tight">MUHAEMIN<br><span class="text-indigo-400">ALPARISI</span></h2>
-        <nav class="space-y-3">
-            <a href="#" class="block bg-indigo-600 px-4 py-3 rounded-xl text-sm font-semibold shadow-md transition duration-200">Data Service</a>
-            <a href="#" class="block text-gray-400 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-xl text-sm font-medium transition duration-200">Cashflow</a>
-        </nav>
-    </div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">Muhaemin<br>Alparisi</div>
+        <ul class="menu-list">
+            <li class="menu-item"><a href="#" class="menu-link active">Data Service</a></li>
+            <li class="menu-item"><a href="#" class="menu-link">Cashflow</a></li>
+        </ul>
+    </aside>
 
-    <!-- MAIN CONTENT -->
-    <div class="flex-1 p-10 max-w-6xl mx-auto w-full">
-        <h1 class="text-3xl font-bold text-gray-800 tracking-tight">Selamat Datang, Muhaemin</h1>
-        <p class="text-sm text-gray-500 mt-1 mb-8">Berikut data real-time kamu dari Google Spreadsheet.</p>
+    <!-- Konten Utama -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <h1>Selamat Datang, Muhaemin</h1>
+            <p>Berikut data real-time kamu.</p>
+        </header>
 
-        <!-- FORM UPDATE KM MOTOR -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-            <label class="block text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">KM Motor Saat Ini</label>
-            <div class="flex gap-4 max-w-md">
-                <input type="number" id="inputKMUtama" placeholder="Contoh: 12500" class="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                <button type="button" onclick="updateKMMotor()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-6 py-2.5 rounded-xl cursor-pointer transition shadow-sm active:scale-95">Update KM</button>
+        <!-- Area Input Data -->
+        <section class="input-section">
+            <!-- Input KM Motor -->
+            <div class="form-group">
+                <label for="kmInput">KM Motor Saat Ini</label>
+                <div style="display: flex; gap: 1rem; max-width: 400px;">
+                    <input type="number" id="kmInput" class="form-control" placeholder="Contoh: 12500">
+                    <button class="btn-submit" id="updateKmBtn">Update KM</button>
+                </div>
             </div>
-        </div>
 
-        <!-- FORM INPUT RIWAYAT PERBAIKAN -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-            <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Input Riwayat Perbaikan / Pembelian Sparepart</h3>
-            <form id="formSparepart" onsubmit="tambahDataLog(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Tanggal Beli</label>
-                    <input type="date" id="tglBeli" required class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Nama Parts</label>
-                    <input type="text" id="namaPart" required placeholder="Oli Mesin" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">KM Ganti</label>
-                    <input type="number" id="kmGanti" required placeholder="15000" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1.5">Service Kembali (KM)</label>
-                    <input type="number" id="serviceKembali" required placeholder="17000" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-2.5 rounded-xl cursor-pointer transition shadow-sm active:scale-95">Tambah Data</button>
-                </div>
-            </form>
-        </div>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
 
-        <!-- TAMPILAN MONITOR KM SAAT INI -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">KM MOTOR SAAT INI</span>
-            <div id="displayKMUtama" class="text-4xl font-black text-gray-900 tracking-tight">Memuat...</div>
-        </div>
+            <!-- Input Data Servis / Parts -->
+            <div class="form-group">
+                <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Riwayat Perbaikan / Pembelian Sparepart</label>
+                <div class="form-grid">
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Tanggal Beli</label>
+                        <input type="date" id="tglBeli" class="form-control">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Nama Parts</label>
+                        <input type="text" id="namaParts" class="form-control" placeholder="Contoh: Oli Mesin">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">KM Ganti</label>
+                        <input type="number" id="kmGanti" class="form-control" placeholder="Contoh: 12000">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Service Kembali (KM)</label>
+                        <input type="number" id="kmKembali" class="form-control" placeholder="Contoh: 14000">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Harga (Rp)</label>
+                        <input type="number" id="hargaParts" class="form-control" placeholder="Contoh: 65000">
+                    </div>
+                    <button class="btn-submit" id="addServiceBtn">Tambah Data</button>
+                </div>
+            </div>
+        </section>
 
-        <!-- LOG TABEL PERAWATAN -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-5">
-                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wide">Log Perawatan & Sparepart</h3>
-                <button type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 cursor-pointer transition shadow-sm self-start sm:self-auto">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Download Laporan Excel
+        <!-- Kartu Statistik Utama -->
+        <section class="card-grid">
+            <div class="card">
+                <div class="card-title">KM Motor Saat Ini</div>
+                <div class="card-value" id="kmDisplay">0 KM</div>
+            </div>
+        </section>
+
+        <!-- Tabel Output Log Servis -->
+        <section class="table-section">
+            <div class="table-header-wrapper">
+                <h2 class="section-title">Log Perawatan & Sparepart</h2>
+                <button class="btn-excel" id="downloadExcelBtn">
+                    📊 Download Laporan Excel
                 </button>
             </div>
-            <div class="overflow-x-auto rounded-xl border border-gray-100">
-                <table class="w-full text-left border-collapse text-sm">
+            
+            <div class="table-responsive">
+                <table id="serviceTable">
                     <thead>
-                        <tr class="bg-gray-50 text-gray-500 border-b border-gray-200">
-                            <th class="py-3.5 px-4 font-semibold">No</th>
-                            <th class="py-3.5 px-4 font-semibold">Tanggal Beli</th>
-                            <th class="py-3.5 px-4 font-semibold">Parts</th>
-                            <th class="py-3.5 px-4 font-semibold">KM Ganti</th>
-                            <th class="py-3.5 px-4 font-semibold">Service Kembali (KM)</th>
-                            <th class="py-3.5 px-4 font-semibold text-center">Status</th>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Tanggal Beli</th>
+                            <th>Parts</th>
+                            <th>KM Ganti</th>
+                            <th>Service Kembali (KM)</th>
+                            <th>Harga</th>
+                            <th>Status</th>
+                            <th style="width: 80px;">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelLogBody" class="text-gray-700 divide-y divide-gray-100">
-                        <tr>
-                            <td colspan="6" class="text-center py-8 text-gray-400 italic">Memuat data dari Spreadsheet...</td>
-                        </tr>
+                    <tbody id="tableBody">
+                        <!-- Data riwayat akan dimuat di sini secara otomatis -->
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
-    <!-- SCRIPT LOGIC -->
+    <!-- LOGIKA JAVASCRIPT -->
     <script>
-        // GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
-        const API_URL = "https://script.google.com/macros/s/AKfycbyi7zBO2MBDKv0aj223RH8S8Xi0yDzPXNWexz7VdqBipmS3LDVSw6KOGgClAGFcrjk/exec"; 
-        
-        let kmMotorSaatIni = 0;
+        // State awal data
+        let currentKm = Number(localStorage.getItem('currentKm')) || 0;
+        let serviceData = JSON.parse(localStorage.getItem('serviceData')) || [];
 
-        async function ambilDataDariSpreadsheet() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                
-                kmMotorSaatIni = parseInt(data.kmUtama) || 0;
-                document.getElementById('displayKMUtama').innerText = kmMotorSaatIni.toLocaleString('id-ID') + ' KM';
+        // Inisialisasi tampilan awal
+        document.addEventListener('DOMContentLoaded', () => {
+            renderKm();
+            renderTable();
+        });
 
-                const tabelBody = document.getElementById('tabelLogBody');
-                tabelBody.innerHTML = ""; 
+        // 1. Fungsi Update KM Saat Ini
+        document.getElementById('updateKmBtn').addEventListener('click', () => {
+            const inputVal = document.getElementById('kmInput').value;
+            if (inputVal === '' || Number(inputVal) < 0) {
+                alert('Masukkan KM motor yang valid!');
+                return;
+            }
+            
+            currentKm = Number(inputVal);
+            localStorage.setItem('currentKm', currentKm);
+            document.getElementById('kmInput').value = '';
+            
+            renderKm();
+            renderTable(); // Update status badge sesuai KM baru
+        });
 
-                if (!data.logPerawatan || data.logPerawatan.length === 0) {
-                    tabelBody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-400 italic">Belum ada data di Spreadsheet.</td></tr>`;
-                    return;
-                }
+        // 2. Fungsi Tambah Data Service / Sparepart
+        document.getElementById('addServiceBtn').addEventListener('click', () => {
+            const tglBeli = document.getElementById('tglBeli').value;
+            const namaParts = document.getElementById('namaParts').value.trim();
+            const kmGanti = document.getElementById('kmGanti').value;
+            const kmKembali = document.getElementById('kmKembali').value;
+            const hargaParts = document.getElementById('hargaParts').value;
 
-                data.logPerawatan.forEach((item, index) => {
-                    const barisBaru = document.createElement('tr');
-                    barisBaru.className = "hover:bg-gray-50/70 transition duration-150";
-                    
-                    let statusTeks = '<span class="inline-block px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-100/80 rounded-full">Aman</span>';
-                    if (kmMotorSaatIni >= item.kmKembali) {
-                        statusTeks = '<span class="inline-block px-3 py-1 text-xs font-bold text-red-700 bg-red-100/80 rounded-full">Waktunya Ganti!</span>';
-                    }
+            // Validasi Sederhana
+            if (!tglBeli || !namaParts || !kmGanti || !kmKembali || !hargaParts) {
+                alert('Mohon isi semua kolom data servis!');
+                return;
+            }
 
-                    const tglFormat = item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID') : '-';
+            const newEntry = {
+                id: Date.now(),
+                tglBeli,
+                namaParts,
+                kmGanti: Number(kmGanti),
+                kmKembali: Number(kmKembali),
+                harga: Number(hargaParts)
+            };
 
-                    barisBaru.innerHTML = `
-                        <td class="py-3.5 px-4 font-medium text-gray-400">${index + 1}</td>
-                        <td class="py-3.5 px-4 text-gray-600">${tglFormat}</td>
-                        <td class="py-3.5 px-4 font-semibold text-gray-800">${item.part || '-'}</td>
-                        <td class="py-3.5 px-4 text-gray-600">${(parseInt(item.kmGanti) || 0).toLocaleString('id-ID')} KM</td>
-                        <td class="py-3.5 px-4 text-gray-600">${(parseInt(item.kmKembali) || 0).toLocaleString('id-ID')} KM</td>
-                        <td class="py-3.5 px-4 text-center">${statusTeks}</td>
-                    `;
-                    tabelBody.appendChild(barisBaru);
-                });
+            serviceData.push(newEntry);
+            saveData();
 
-            } catch (error) {
-                console.error("Gagal memuat data:", error);
-                document.getElementById('tabelLogBody').innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500 italic">Gagal memuat data dari Spreadsheet. Periksa API URL!</td></tr>`;
+            // Reset Form Input
+            document.getElementById('tglBeli').value = '';
+            document.getElementById('namaParts').value = '';
+            document.getElementById('kmGanti').value = '';
+            document.getElementById('kmKembali').value = '';
+            document.getElementById('hargaParts').value = '';
+
+            renderTable();
+        });
+
+        // 3. Fungsi Render KM Card
+        function renderKm() {
+            document.getElementById('kmDisplay').textContent = `${currentKm.toLocaleString('id-ID')} KM`;
+        }
+
+        // 4. Fungsi Render Tabel
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (serviceData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">Belum ada data perawatan.</td></tr>`;
+                return;
+            }
+
+            serviceData.forEach((item, index) => {
+                // Kalkulasi Status berdasarkan KM Saat Ini
+                const perluGanti = currentKm >= item.kmKembali;
+                const badgeHtml = perluGanti 
+                    ? `<span class="badge badge-ganti">Waktunya Ganti</span>`
+                    : `<span class="badge badge-aman">Aman</span>`;
+
+                // Format Rupiah
+                const formattedHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.harga);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.tglBeli}</td>
+                    <td><strong>${item.namaParts}</strong></td>
+                    <td>${item.kmGanti.toLocaleString('id-ID')} KM</td>
+                    <td>${item.kmKembali.toLocaleString('id-ID')} KM</td>
+                    <td>${formattedHarga}</td>
+                    <td>${badgeHtml}</td>
+                    <td><button class="btn-delete" onclick="deleteItem(${item.id})">Hapus</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 5. Fungsi Hapus Data
+        function deleteItem(id) {
+            if (confirm('Yakin ingin menghapus data ini?')) {
+                serviceData = serviceData.filter(item => item.id !== id);
+                saveData();
+                renderTable();
             }
         }
 
-        async function updateKMMotor() {
-            const inputKM = document.getElementById('inputKMUtama').value;
-            if (!inputKM || inputKM < 0) return alert('Masukkan angka KM yang valid!');
+        // Simpan Data ke LocalStorage Laptop/HP
+        function saveData() {
+            localStorage.setItem('serviceData', JSON.stringify(serviceData));
+        }
 
-            document.getElementById('displayKMUtama').innerText = "Memperbarui...";
+        // 6. Fungsi Export Data ke Excel (SheetJS)
+        document.getElementById('downloadExcelBtn').addEventListener('click', () => {
+            if (serviceData.length === 0) {
+                alert('Tidak ada data untuk diunduh!');
+                return;
+            }
 
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Mencegah error CORS di browser lokal
+            // Memformat data agar rapi di file Excel
+            const exportData = serviceData.map((item, index) => ({
+                No: index + 1,
+                'Tanggal Beli': item.tglBeli,
+                'Nama Parts': item.namaParts,
+                'KM Ganti': item.kmGanti,
+                'Service Kembali (KM)': item.kmKembali,
+                'Harga (Rp)': item.harga,
+                Status: currentKm >= item.kmKembali ? 'Waktunya Ganti' : 'Aman'
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Log Servis");
+
+            // Simpan File Excel
+            XLSX.writeFile(workbook, `Laporan_Servis_Muhaemin_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        });
+    </script>
+</body>
+</html>
