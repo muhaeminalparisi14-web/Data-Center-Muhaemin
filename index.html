@@ -1,10 +1,148 @@
-<!-- LOGIKA JAVASCRIPT FIREBASE -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA CENTER MUHAEMIN</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7fe; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 260px; background-color: #1e1b4b; color: #ffffff; padding: 2rem 1.5rem; flex-shrink: 0; }
+        .brand { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 3rem; color: #f3f4f6; text-transform: uppercase; }
+        .menu-list { list-style: none; }
+        .menu-item { margin-bottom: 0.5rem; }
+        .menu-link { display: block; padding: 0.8rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 8px; font-weight: 500; }
+        .menu-link.active { background-color: #4f46e5; color: #ffffff; }
+        .main-content { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+        .header { margin-bottom: 2rem; }
+        .header h1 { font-size: 1.8rem; font-weight: 600; }
+        .header p { color: #64748b; margin-top: 0.2rem; }
+        .input-section { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; align-items: flex-end; }
+        .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none; }
+        .form-control:focus { border-color: #4f46e5; }
+        .btn-submit { background-color: #4f46e5; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; height: 43px; transition: background 0.2s ease; }
+        .btn-submit:hover { background-color: #4338ca; }
+        .btn-delete { background-color: #ef4444; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .btn-delete:hover { background-color: #dc2626; }
+        .btn-excel { background-color: #16a34a; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s ease; }
+        .btn-excel:hover { background-color: #15803d; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .card { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .card-title { font-size: 0.9rem; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .card-value { font-size: 2rem; font-weight: 700; }
+        .table-section { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .table-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .section-title { font-size: 1.2rem; font-weight: 600; }
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
+        th { padding: 1rem; color: #64748b; font-weight: 600; border-bottom: 2px solid #f1f5f9; background-color: #f8fafc; }
+        td { padding: 1rem; border-bottom: 1px solid #f1f5f9; color: #334155; }
+        tr:hover td { background-color: #f8fafc; }
+        .badge { padding: 0.35rem 0.75rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
+        .badge-aman { background-color: #dcfce7; color: #15803d; }
+        .badge-ganti { background-color: #fee2e2; color: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">Muhaemin<br>Alparisi</div>
+        <ul class="menu-list">
+            <li class="menu-item"><a href="#" class="menu-link active">Data Service</a></li>
+            <li class="menu-item"><a href="#" class="menu-link">Cashflow</a></li>
+        </ul>
+    </aside>
+
+    <!-- Konten Utama -->
+    <main class="main-content">
+        <header class="header">
+            <h1>Selamat Datang, Muhaemin</h1>
+            <p>Berikut data real-time kamu.</p>
+        </header>
+
+        <section class="input-section">
+            <div class="form-group">
+                <label for="kmInput">KM Motor Saat Ini</label>
+                <div style="display: flex; gap: 1rem; max-width: 400px;">
+                    <input type="number" id="kmInput" class="form-control" placeholder="Contoh: 12500">
+                    <button class="btn-submit" id="updateKmBtn">Update KM</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
+
+            <div class="form-group">
+                <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Riwayat Perbaikan / Pembelian Sparepart</label>
+                <div class="form-grid">
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Tanggal Beli</label>
+                        <input type="date" id="tglBeli" class="form-control">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Nama Parts</label>
+                        <input type="text" id="namaParts" class="form-control" placeholder="Contoh: Oli Mesin">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">KM Ganti</label>
+                        <input type="number" id="kmGanti" class="form-control" placeholder="Contoh: 12000">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Service Kembali (KM)</label>
+                        <input type="number" id="kmKembali" class="form-control" placeholder="Contoh: 14000">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #64748b;">Harga (Rp)</label>
+                        <input type="number" id="hargaParts" class="form-control" placeholder="Contoh: 65000">
+                    </div>
+                    <button class="btn-submit" id="addServiceBtn">Tambah Data</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="card-grid">
+            <div class="card">
+                <div class="card-title">KM Motor Saat Ini</div>
+                <div class="card-value" id="kmDisplay">0 KM</div>
+            </div>
+        </section>
+
+        <section class="table-section">
+            <div class="table-header-wrapper">
+                <h2 class="section-title">Log Perawatan & Sparepart</h2>
+                <button class="btn-excel" id="downloadExcelBtn">📊 Download Laporan Excel</button>
+            </div>
+            <div class="table-responsive">
+                <table id="serviceTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Tanggal Beli</th>
+                            <th>Parts</th>
+                            <th>KM Ganti</th>
+                            <th>Service Kembali (KM)</th>
+                            <th>Harga</th>
+                            <th>Status</th>
+                            <th style="width: 80px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- LOGIKA JAVASCRIPT FIREBASE -->
     <script type="module">
-        // 1. Import Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // 2. PASTE FIREBASE CONFIG KAMU DI SINI
+        // GANTI BAGIAN INI DENGAN MILIKMU
         const firebaseConfig = {
             apiKey: "AIzaSyCMF8fMBmpccPvEw15fhaJmsDSN7KrXQos",
             authDomain: "data-center-muhaemin.firebaseapp.com",
@@ -14,16 +152,12 @@
             appId: "1:819782498063:web:4597f248a390ea383ff07a"
         };
 
-        // Inisialisasi Firebase & Firestore
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // State data lokal untuk referensi dan export Excel
         let currentKm = 0;
         let serviceData = [];
 
-        // 3. LISTEN DATA REAL-TIME DARI FIREBASE
-        // Mengambil KM saat ini
         onSnapshot(doc(db, "settings", "motorData"), (docSnap) => {
             if (docSnap.exists()) {
                 currentKm = docSnap.data().currentKm;
@@ -32,35 +166,25 @@
             }
         });
 
-        // Mengambil Riwayat Servis
         onSnapshot(collection(db, "services"), (snapshot) => {
-            serviceData = []; // Kosongkan data lokal
+            serviceData = []; 
             snapshot.forEach((doc) => {
-                // Masukkan ID dokumen dari Firebase ke dalam data kita
                 serviceData.push({ id: doc.id, ...doc.data() });
             });
-            // Urutkan berdasarkan waktu input (opsional, tergantung kebutuhan)
             serviceData.sort((a, b) => a.timestamp - b.timestamp);
             renderTable();
         });
 
-        // 4. FUNGSI UPDATE KM (Tulis ke Firebase)
         document.getElementById('updateKmBtn').addEventListener('click', async () => {
             const inputVal = document.getElementById('kmInput').value;
-            if (inputVal === '' || Number(inputVal) < 0) {
-                alert('Masukkan KM motor yang valid!');
-                return;
-            }
+            if (inputVal === '' || Number(inputVal) < 0) return alert('Masukkan KM motor yang valid!');
             
-            // Simpan ke Firestore di koleksi "settings", dokumen "motorData"
             await setDoc(doc(db, "settings", "motorData"), {
                 currentKm: Number(inputVal)
-            }, { merge: true }); // merge agar tidak menimpa field lain jika ada
-
+            }, { merge: true }); 
             document.getElementById('kmInput').value = '';
         });
 
-        // 5. FUNGSI TAMBAH DATA SERVIS (Tulis ke Firebase)
         document.getElementById('addServiceBtn').addEventListener('click', async () => {
             const tglBeli = document.getElementById('tglBeli').value;
             const namaParts = document.getElementById('namaParts').value.trim();
@@ -68,22 +192,12 @@
             const kmKembali = document.getElementById('kmKembali').value;
             const hargaParts = document.getElementById('hargaParts').value;
 
-            if (!tglBeli || !namaParts || !kmGanti || !kmKembali || !hargaParts) {
-                alert('Mohon isi semua kolom data servis!');
-                return;
-            }
+            if (!tglBeli || !namaParts || !kmGanti || !kmKembali || !hargaParts) return alert('Mohon isi semua kolom data servis!');
 
-            // Tambah dokumen baru ke koleksi "services"
             await addDoc(collection(db, "services"), {
-                tglBeli,
-                namaParts,
-                kmGanti: Number(kmGanti),
-                kmKembali: Number(kmKembali),
-                harga: Number(hargaParts),
-                timestamp: Date.now() // untuk keperluan sorting
+                tglBeli, namaParts, kmGanti: Number(kmGanti), kmKembali: Number(kmKembali), harga: Number(hargaParts), timestamp: Date.now()
             });
 
-            // Reset Form
             document.getElementById('tglBeli').value = '';
             document.getElementById('namaParts').value = '';
             document.getElementById('kmGanti').value = '';
@@ -91,15 +205,12 @@
             document.getElementById('hargaParts').value = '';
         });
 
-        // 6. FUNGSI HAPUS DATA
-        // Menggunakan window object karena dalam ES Module, fungsi tidak bersifat global
         window.deleteItem = async (id) => {
             if (confirm('Yakin ingin menghapus data ini?')) {
                 await deleteDoc(doc(db, "services", id));
             }
         };
 
-        // 7. FUNGSI RENDER TAMPILAN
         function renderKm() {
             document.getElementById('kmDisplay').textContent = `${currentKm.toLocaleString('id-ID')} KM`;
         }
@@ -107,55 +218,39 @@
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-
             if (serviceData.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">Belum ada data perawatan.</td></tr>`;
                 return;
             }
-
             serviceData.forEach((item, index) => {
                 const perluGanti = currentKm >= item.kmKembali;
                 const badgeHtml = perluGanti 
                     ? `<span class="badge badge-ganti">Waktunya Ganti</span>`
                     : `<span class="badge badge-aman">Aman</span>`;
-
                 const formattedHarga = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.harga);
-
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${item.tglBeli}</td>
-                    <td><strong>${item.namaParts}</strong></td>
-                    <td>${item.kmGanti.toLocaleString('id-ID')} KM</td>
-                    <td>${item.kmKembali.toLocaleString('id-ID')} KM</td>
-                    <td>${formattedHarga}</td>
-                    <td>${badgeHtml}</td>
+                    <td>${index + 1}</td><td>${item.tglBeli}</td><td><strong>${item.namaParts}</strong></td>
+                    <td>${item.kmGanti.toLocaleString('id-ID')} KM</td><td>${item.kmKembali.toLocaleString('id-ID')} KM</td>
+                    <td>${formattedHarga}</td><td>${badgeHtml}</td>
                     <td><button class="btn-delete" onclick="window.deleteItem('${item.id}')">Hapus</button></td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // 8. EXPORT EXCEL (Masih menggunakan logika yang sama, mengambil dari state lokal serviceData)
         document.getElementById('downloadExcelBtn').addEventListener('click', () => {
-            if (serviceData.length === 0) {
-                alert('Tidak ada data untuk diunduh!');
-                return;
-            }
-
+            if (serviceData.length === 0) return alert('Tidak ada data untuk diunduh!');
             const exportData = serviceData.map((item, index) => ({
-                No: index + 1,
-                'Tanggal Beli': item.tglBeli,
-                'Nama Parts': item.namaParts,
-                'KM Ganti': item.kmGanti,
-                'Service Kembali (KM)': item.kmKembali,
-                'Harga (Rp)': item.harga,
-                Status: currentKm >= item.kmKembali ? 'Waktunya Ganti' : 'Aman'
+                No: index + 1, 'Tanggal Beli': item.tglBeli, 'Nama Parts': item.namaParts,
+                'KM Ganti': item.kmGanti, 'Service Kembali (KM)': item.kmKembali,
+                'Harga (Rp)': item.harga, Status: currentKm >= item.kmKembali ? 'Waktunya Ganti' : 'Aman'
             }));
-
             const worksheet = XLSX.utils.json_to_sheet(exportData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Log Servis");
-            XLSX.writeFile(workbook, `Laporan_Servis_Muhaemin_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            XLSX.writeFile(workbook, `Laporan_Servis_${new Date().toISOString().slice(0, 10)}.xlsx`);
         });
     </script>
+</body>
+</html>
