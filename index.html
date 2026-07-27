@@ -8,36 +8,58 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f7fe; color: #1e293b; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background-color: #1e1b4b; color: #ffffff; padding: 2rem 1.5rem; flex-shrink: 0; }
+        body { background-color: #f4f7fe; color: #1e293b; height: 100vh; overflow: hidden; display: flex; }
+        
+        /* Utility */
+        .text-green { color: #16a34a; font-weight: 600; }
+        .text-red { color: #ef4444; font-weight: 600; }
+        .d-none { display: none !important; }
+        .flex { display: flex; }
+
+        /* ================== LOGIN STYLE ================== */
+        #viewLogin { 
+            width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; 
+            background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%);
+            position: absolute; top: 0; left: 0; z-index: 1000;
+        }
+        .login-card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; }
+        .login-card h2 { margin-bottom: 0.5rem; color: #1e1b4b; }
+        .login-card p { color: #64748b; margin-bottom: 2rem; font-size: 0.9rem; }
+        .login-form .form-group { text-align: left; margin-bottom: 1rem; }
+        .login-btn { width: 100%; background-color: #4f46e5; color: white; padding: 0.8rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1rem; }
+        .login-btn:hover { background-color: #4338ca; }
+        .login-error { color: #ef4444; font-size: 0.85rem; margin-top: 1rem; display: none; }
+
+        /* ================== APP STYLE ================== */
+        #viewDashboard { width: 100%; height: 100%; display: flex; }
+        .sidebar { width: 260px; background-color: #1e1b4b; color: #ffffff; padding: 2rem 1.5rem; flex-shrink: 0; display: flex; flex-direction: column; }
         .brand { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 3rem; color: #f3f4f6; text-transform: uppercase; }
-        .menu-list { list-style: none; }
+        .menu-list { list-style: none; flex-grow: 1; }
         .menu-item { margin-bottom: 0.5rem; }
         .menu-link { display: block; padding: 0.8rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 8px; font-weight: 500; cursor: pointer; }
         .menu-link.active { background-color: #4f46e5; color: #ffffff; }
-        .main-content { flex-grow: 1; padding: 2rem; overflow-y: auto; }
+        
+        .btn-logout { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; }
+        .btn-logout:hover { background: #ef4444; color: white; }
+
+        .main-content { flex-grow: 1; padding: 2rem; overflow-y: auto; background-color: #f4f7fe; }
         .header { margin-bottom: 2rem; }
         .header h1 { font-size: 1.8rem; font-weight: 600; }
         .header p { color: #64748b; margin-top: 0.2rem; }
         .input-section { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem; }
-        .form-group { margin-bottom: 1.2rem; }
         .form-group label { display: block; font-size: 0.9rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; align-items: flex-end; }
         .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none; }
         .form-control:focus { border-color: #4f46e5; }
-        .btn-submit { background-color: #4f46e5; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; height: 43px; transition: background 0.2s ease; }
-        .btn-submit:hover { background-color: #4338ca; }
+        .btn-submit { background-color: #4f46e5; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; height: 43px; }
         .btn-delete { background-color: #ef4444; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-        .btn-delete:hover { background-color: #dc2626; }
-        .btn-excel { background-color: #16a34a; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s ease; }
-        .btn-excel:hover { background-color: #15803d; }
+        .btn-excel { background-color: #16a34a; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .card { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
         .card-title { font-size: 0.9rem; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem; }
         .card-value { font-size: 2rem; font-weight: 700; }
         .table-section { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
         .table-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .section-title { font-size: 1.2rem; font-weight: 600; }
         .table-responsive { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
         th { padding: 1rem; color: #64748b; font-weight: 600; border-bottom: 2px solid #f1f5f9; background-color: #f8fafc; }
@@ -47,185 +69,130 @@
         .badge-aman { background-color: #dcfce7; color: #15803d; }
         .badge-ganti { background-color: #fee2e2; color: #dc2626; }
         .badge-kategori { background-color: #e2e8f0; color: #475569; }
-        
-        /* Utility Classes tambahan untuk Cashflow */
-        .text-green { color: #16a34a; font-weight: 600; }
-        .text-red { color: #ef4444; font-weight: 600; }
-        .d-none { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="brand">Muhaemin<br>Alparisi</div>
-        <ul class="menu-list">
-            <li class="menu-item"><a id="navService" class="menu-link active">Data Service</a></li>
-            <li class="menu-item"><a id="navCashflow" class="menu-link">Cashflow</a></li>
-        </ul>
-    </aside>
-
-    <!-- Konten Utama -->
-    <main class="main-content">
-        <header class="header">
-            <h1>Selamat Datang, Muhaemin</h1>
-            <p>Berikut data real-time kamu.</p>
-        </header>
-
-        <!-- ============================== VIEW: DATA SERVICE ============================== -->
-        <div id="viewService">
-            <section class="input-section">
+    <!-- ============================== HALAMAN LOGIN ============================== -->
+    <div id="viewLogin">
+        <div class="login-card">
+            <h2>Data Center</h2>
+            <p>Silakan login untuk mengakses data Anda.</p>
+            <div class="login-form">
                 <div class="form-group">
-                    <label for="kmInput">KM Motor Saat Ini</label>
-                    <div style="display: flex; gap: 1rem; max-width: 400px;">
-                        <input type="number" id="kmInput" class="form-control" placeholder="Contoh: 12500">
-                        <button class="btn-submit" id="updateKmBtn">Update KM</button>
-                    </div>
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="Masukkan email">
                 </div>
-
-                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
-
                 <div class="form-group">
-                    <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Riwayat Perbaikan / Pembelian Sparepart</label>
-                    <div class="form-grid">
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Tanggal Beli</label>
-                            <input type="date" id="tglBeli" class="form-control">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Nama Parts</label>
-                            <input type="text" id="namaParts" class="form-control" placeholder="Contoh: Oli Mesin">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">KM Ganti</label>
-                            <input type="number" id="kmGanti" class="form-control" placeholder="Contoh: 12000">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Service Kembali (KM)</label>
-                            <input type="number" id="kmKembali" class="form-control" placeholder="Contoh: 14000">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Harga (Rp)</label>
-                            <input type="number" id="hargaParts" class="form-control" placeholder="Contoh: 65000">
-                        </div>
-                        <button class="btn-submit" id="addServiceBtn">Tambah Data</button>
-                    </div>
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan password">
                 </div>
-            </section>
-
-            <section class="card-grid">
-                <div class="card">
-                    <div class="card-title">KM Motor Saat Ini</div>
-                    <div class="card-value" id="kmDisplay">0 KM</div>
-                </div>
-            </section>
-
-            <section class="table-section">
-                <div class="table-header-wrapper">
-                    <h2 class="section-title">Log Perawatan & Sparepart</h2>
-                    <button class="btn-excel" id="downloadExcelBtn">📊 Download Laporan Excel</button>
-                </div>
-                <div class="table-responsive">
-                    <table id="serviceTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">No</th>
-                                <th>Tanggal Beli</th>
-                                <th>Parts</th>
-                                <th>KM Ganti</th>
-                                <th>Service Kembali (KM)</th>
-                                <th>Harga</th>
-                                <th>Status</th>
-                                <th style="width: 80px;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
-                </div>
-            </section>
+                <button class="login-btn" id="btnLogin">Masuk</button>
+                <div class="login-error" id="loginError">Email atau password salah!</div>
+            </div>
         </div>
+    </div>
 
-        <!-- ============================== VIEW: CASHFLOW ============================== -->
-        <div id="viewCashflow" class="d-none">
-            <section class="input-section">
-                <div class="form-group">
-                    <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Pemasukan & Pengeluaran</label>
-                    <div class="form-grid">
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Tanggal</label>
-                            <input type="date" id="cfTanggal" class="form-control">
+    <!-- ============================== APLIKASI UTAMA (DASHBOARD) ============================== -->
+    <div id="viewDashboard" class="d-none">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">Muhaemin<br>Alparisi</div>
+            <ul class="menu-list">
+                <li class="menu-item"><a id="navService" class="menu-link active">Data Service</a></li>
+                <li class="menu-item"><a id="navCashflow" class="menu-link">Cashflow</a></li>
+            </ul>
+            <button class="btn-logout" id="btnLogout">🚪 Keluar (Logout)</button>
+        </aside>
+
+        <!-- Konten Utama -->
+        <main class="main-content">
+            <header class="header">
+                <h1>Selamat Datang, Muhaemin</h1>
+                <p>Berikut data real-time kamu.</p>
+            </header>
+
+            <!-- VIEW: DATA SERVICE -->
+            <div id="appService">
+                <section class="input-section">
+                    <div class="form-group">
+                        <label for="kmInput">KM Motor Saat Ini</label>
+                        <div style="display: flex; gap: 1rem; max-width: 400px;">
+                            <input type="number" id="kmInput" class="form-control" placeholder="Contoh: 12500">
+                            <button class="btn-submit" id="updateKmBtn">Update KM</button>
                         </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Tipe</label>
-                            <select id="cfTipe" class="form-control">
-                                <option value="Pemasukan">Pemasukan</option>
-                                <option value="Pengeluaran" selected>Pengeluaran</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Kategori</label>
-                            <select id="cfKategori" class="form-control">
-                                <option value="">- Pilih Kategori -</option>
-                                <!-- Option akan dirender JS -->
-                            </select>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Keterangan</label>
-                            <input type="text" id="cfKeterangan" class="form-control" placeholder="Contoh: Gaji / Isi Bensin">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8rem; color: #64748b;">Nominal (Rp)</label>
-                            <input type="number" id="cfNominal" class="form-control" placeholder="Contoh: 150000">
-                        </div>
-                        <button class="btn-submit" id="addCashflowBtn">Catat</button>
                     </div>
-                </div>
-            </section>
+                    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
+                    <div class="form-group">
+                        <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Riwayat Perbaikan / Pembelian Sparepart</label>
+                        <div class="form-grid">
+                            <div><label>Tanggal Beli</label><input type="date" id="tglBeli" class="form-control"></div>
+                            <div><label>Nama Parts</label><input type="text" id="namaParts" class="form-control" placeholder="Contoh: Oli Mesin"></div>
+                            <div><label>KM Ganti</label><input type="number" id="kmGanti" class="form-control" placeholder="Contoh: 12000"></div>
+                            <div><label>Service Kembali</label><input type="number" id="kmKembali" class="form-control" placeholder="Contoh: 14000"></div>
+                            <div><label>Harga (Rp)</label><input type="number" id="hargaParts" class="form-control" placeholder="Contoh: 65000"></div>
+                            <button class="btn-submit" id="addServiceBtn">Tambah Data</button>
+                        </div>
+                    </div>
+                </section>
+                <section class="card-grid">
+                    <div class="card"><div class="card-title">KM Motor Saat Ini</div><div class="card-value" id="kmDisplay">0 KM</div></div>
+                </section>
+                <section class="table-section">
+                    <div class="table-header-wrapper">
+                        <h2 class="section-title">Log Perawatan & Sparepart</h2>
+                        <button class="btn-excel" id="downloadExcelBtn">📊 Download Laporan</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="serviceTable">
+                            <thead><tr><th>No</th><th>Tanggal Beli</th><th>Parts</th><th>KM Ganti</th><th>Service Kembali</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
 
-            <section class="card-grid">
-                <div class="card">
-                    <div class="card-title">Saldo Tersedia</div>
-                    <div class="card-value" id="saldoDisplay">Rp 0</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Total Pemasukan</div>
-                    <div class="card-value text-green" id="pemasukanDisplay">Rp 0</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Total Pengeluaran</div>
-                    <div class="card-value text-red" id="pengeluaranDisplay">Rp 0</div>
-                </div>
-            </section>
-
-            <section class="table-section">
-                <div class="table-header-wrapper">
-                    <h2 class="section-title">Log Cashflow</h2>
-                    <button class="btn-excel" id="downloadExcelCfBtn">📊 Download Laporan Cashflow</button>
-                </div>
-                <div class="table-responsive">
-                    <table id="cashflowTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">No</th>
-                                <th>Tanggal</th>
-                                <th>Tipe</th>
-                                <th>Kategori</th>
-                                <th>Keterangan</th>
-                                <th>Nominal</th>
-                                <th style="width: 80px;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBodyCf"></tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-    </main>
+            <!-- VIEW: CASHFLOW -->
+            <div id="appCashflow" class="d-none">
+                <section class="input-section">
+                    <div class="form-group">
+                        <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Pemasukan & Pengeluaran</label>
+                        <div class="form-grid">
+                            <div><label>Tanggal</label><input type="date" id="cfTanggal" class="form-control"></div>
+                            <div><label>Tipe</label><select id="cfTipe" class="form-control"><option value="Pemasukan">Pemasukan</option><option value="Pengeluaran" selected>Pengeluaran</option></select></div>
+                            <div><label>Kategori</label><select id="cfKategori" class="form-control"><option value="">- Pilih Kategori -</option></select></div>
+                            <div><label>Keterangan</label><input type="text" id="cfKeterangan" class="form-control" placeholder="Contoh: Gaji / Isi Bensin"></div>
+                            <div><label>Nominal (Rp)</label><input type="number" id="cfNominal" class="form-control" placeholder="Contoh: 150000"></div>
+                            <button class="btn-submit" id="addCashflowBtn">Catat</button>
+                        </div>
+                    </div>
+                </section>
+                <section class="card-grid">
+                    <div class="card"><div class="card-title">Saldo Tersedia</div><div class="card-value" id="saldoDisplay">Rp 0</div></div>
+                    <div class="card"><div class="card-title">Total Pemasukan</div><div class="card-value text-green" id="pemasukanDisplay">Rp 0</div></div>
+                    <div class="card"><div class="card-title">Total Pengeluaran</div><div class="card-value text-red" id="pengeluaranDisplay">Rp 0</div></div>
+                </section>
+                <section class="table-section">
+                    <div class="table-header-wrapper">
+                        <h2 class="section-title">Log Cashflow</h2>
+                        <button class="btn-excel" id="downloadExcelCfBtn">📊 Download Laporan</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="cashflowTable">
+                            <thead><tr><th>No</th><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></tr></thead>
+                            <tbody id="tableBodyCf"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
 
     <!-- LOGIKA JAVASCRIPT FIREBASE -->
     <script type="module">
-        // Perhatikan penambahan 'arrayUnion' untuk fitur Kategori Baru
+        // Tambahkan import Autentikasi dari Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -238,52 +205,145 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // ============================== LOGIKA LOGIN & LOGOUT ==============================
+        const viewLogin = document.getElementById('viewLogin');
+        const viewDashboard = document.getElementById('viewDashboard');
+        const btnLogin = document.getElementById('btnLogin');
+        const btnLogout = document.getElementById('btnLogout');
+        const loginError = document.getElementById('loginError');
+
+        // Cek status login (Apakah user sedang login atau tidak)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Jika sudah login, sembunyikan halaman login dan tampilkan dashboard
+                viewLogin.classList.add('d-none');
+                viewDashboard.classList.remove('d-none');
+                
+                // Panggil fungsi untuk mengambil data (hanya ditarik saat user sudah login)
+                initDataListeners();
+            } else {
+                // Jika belum login, tampilkan halaman login
+                viewLogin.classList.remove('d-none');
+                viewDashboard.classList.add('d-none');
+            }
+        });
+
+        // Event Tombol Login
+        btnLogin.addEventListener('click', () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            btnLogin.textContent = "Loading...";
+            
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    loginError.style.display = 'none';
+                    btnLogin.textContent = "Masuk";
+                    document.getElementById('loginPassword').value = '';
+                })
+                .catch((error) => {
+                    loginError.style.display = 'block';
+                    btnLogin.textContent = "Masuk";
+                });
+        });
+
+        // Event Tombol Logout
+        btnLogout.addEventListener('click', () => {
+            if(confirm("Apakah Anda yakin ingin keluar?")) {
+                signOut(auth);
+            }
+        });
 
         // ============================== LOGIKA UI TABS ==============================
         const navService = document.getElementById('navService');
         const navCashflow = document.getElementById('navCashflow');
-        const viewService = document.getElementById('viewService');
-        const viewCashflow = document.getElementById('viewCashflow');
+        const appService = document.getElementById('appService');
+        const appCashflow = document.getElementById('appCashflow');
 
         navService.addEventListener('click', () => {
             navService.classList.add('active');
             navCashflow.classList.remove('active');
-            viewService.classList.remove('d-none');
-            viewCashflow.classList.add('d-none');
+            appService.classList.remove('d-none');
+            appCashflow.classList.add('d-none');
         });
 
         navCashflow.addEventListener('click', () => {
             navCashflow.classList.add('active');
             navService.classList.remove('active');
-            viewCashflow.classList.remove('d-none');
-            viewService.classList.add('d-none');
+            appCashflow.classList.remove('d-none');
+            appService.classList.add('d-none');
         });
 
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
-        // ============================== LOGIKA DATA SERVICE ==============================
+        // ============================== DATABASE INIT (Dipanggil setelah login) ==============================
         let currentKm = 0;
         let serviceData = [];
+        let cashflowData = [];
+        let categories = ["Gaji", "Transportasi", "Makan & Minum", "Internet", "Investasi", "Lainnya"];
+        let isDataInitialized = false;
 
-        onSnapshot(doc(db, "settings", "motorData"), (docSnap) => {
-            if (docSnap.exists()) {
-                currentKm = docSnap.data().currentKm || 0;
-                document.getElementById('kmDisplay').textContent = `${currentKm.toLocaleString('id-ID')} KM`;
+        function initDataListeners() {
+            // Mencegah pemanggilan database berulang-ulang
+            if (isDataInitialized) return;
+            isDataInitialized = true;
+
+            // 1. Ambil Data Service (Motor KM)
+            onSnapshot(doc(db, "settings", "motorData"), (docSnap) => {
+                if (docSnap.exists()) {
+                    currentKm = docSnap.data().currentKm || 0;
+                    document.getElementById('kmDisplay').textContent = `${currentKm.toLocaleString('id-ID')} KM`;
+                    renderServiceTable();
+                }
+            });
+
+            // 2. Ambil List Data Service
+            onSnapshot(collection(db, "services"), (snapshot) => {
+                serviceData = []; 
+                snapshot.forEach((doc) => serviceData.push({ id: doc.id, ...doc.data() }));
+                serviceData.sort((a, b) => a.timestamp - b.timestamp);
                 renderServiceTable();
-            }
-        });
+            });
 
-        onSnapshot(collection(db, "services"), (snapshot) => {
-            serviceData = []; 
-            snapshot.forEach((doc) => serviceData.push({ id: doc.id, ...doc.data() }));
-            serviceData.sort((a, b) => a.timestamp - b.timestamp);
-            renderServiceTable();
-        });
+            // 3. Ambil Kategori Cashflow
+            const categoryRef = doc(db, "settings", "cfCategories");
+            onSnapshot(categoryRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    categories = docSnap.data().list || categories;
+                } else {
+                    setDoc(categoryRef, { list: categories });
+                }
+                renderDropdownKategori();
+            });
 
+            // 4. Ambil Data Cashflow
+            onSnapshot(collection(db, "cashflow"), (snapshot) => {
+                cashflowData = []; 
+                let totalPemasukan = 0;
+                let totalPengeluaran = 0;
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    cashflowData.push({ id: doc.id, ...data });
+                    if(data.tipe === 'Pemasukan') totalPemasukan += data.nominal;
+                    if(data.tipe === 'Pengeluaran') totalPengeluaran += data.nominal;
+                });
+
+                cashflowData.sort((a, b) => a.timestamp - b.timestamp);
+                document.getElementById('pemasukanDisplay').textContent = formatRupiah(totalPemasukan);
+                document.getElementById('pengeluaranDisplay').textContent = formatRupiah(totalPengeluaran);
+                document.getElementById('saldoDisplay').textContent = formatRupiah(totalPemasukan - totalPengeluaran);
+                renderCashflowTable();
+            });
+        }
+
+        // ============================== LOGIKA DATA SERVICE ==============================
         document.getElementById('updateKmBtn').addEventListener('click', async () => {
             const inputVal = document.getElementById('kmInput').value;
-            if (inputVal === '' || Number(inputVal) < 0) return alert('Masukkan KM motor yang valid!');
+            if (inputVal === '' || Number(inputVal) < 0) return alert('Masukkan KM valid!');
             await setDoc(doc(db, "settings", "motorData"), { currentKm: Number(inputVal) }, { merge: true }); 
             document.getElementById('kmInput').value = '';
         });
@@ -294,134 +354,62 @@
             const kmGanti = document.getElementById('kmGanti').value;
             const kmKembali = document.getElementById('kmKembali').value;
             const hargaParts = document.getElementById('hargaParts').value;
-
-            if (!tglBeli || !namaParts || !kmGanti || !kmKembali || !hargaParts) return alert('Mohon isi semua kolom data servis!');
-
+            if (!tglBeli || !namaParts || !kmGanti || !kmKembali || !hargaParts) return alert('Isi semua kolom!');
+            
             await addDoc(collection(db, "services"), {
                 tglBeli, namaParts, kmGanti: Number(kmGanti), kmKembali: Number(kmKembali), harga: Number(hargaParts), timestamp: Date.now()
             });
-
-            document.getElementById('tglBeli').value = '';
-            document.getElementById('namaParts').value = '';
-            document.getElementById('kmGanti').value = '';
-            document.getElementById('kmKembali').value = '';
-            document.getElementById('hargaParts').value = '';
+            ['tglBeli','namaParts','kmGanti','kmKembali','hargaParts'].forEach(id => document.getElementById(id).value = '');
         });
 
-        window.deleteService = async (id) => {
-            if (confirm('Yakin ingin menghapus data ini?')) await deleteDoc(doc(db, "services", id));
-        };
+        window.deleteService = async (id) => { if (confirm('Hapus data ini?')) await deleteDoc(doc(db, "services", id)); };
 
         function renderServiceTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-            if (serviceData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">Belum ada data perawatan.</td></tr>`;
-                return;
-            }
+            if (serviceData.length === 0) return tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">Belum ada data perawatan.</td></tr>`;
+            
             serviceData.forEach((item, index) => {
-                const perluGanti = currentKm >= item.kmKembali;
-                const badgeHtml = perluGanti ? `<span class="badge badge-ganti">Waktunya Ganti</span>` : `<span class="badge badge-aman">Aman</span>`;
-                
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${item.tglBeli}</td>
-                        <td><strong>${item.namaParts}</strong></td>
-                        <td>${item.kmGanti.toLocaleString('id-ID')} KM</td>
-                        <td>${item.kmKembali.toLocaleString('id-ID')} KM</td>
-                        <td>${formatRupiah(item.harga)}</td>
-                        <td>${badgeHtml}</td>
-                        <td><button class="btn-delete" onclick="window.deleteService('${item.id}')">Hapus</button></td>
-                    </tr>`;
+                const badgeHtml = currentKm >= item.kmKembali ? `<span class="badge badge-ganti">Waktunya Ganti</span>` : `<span class="badge badge-aman">Aman</span>`;
+                tbody.innerHTML += `<tr>
+                    <td>${index + 1}</td><td>${item.tglBeli}</td><td><strong>${item.namaParts}</strong></td>
+                    <td>${item.kmGanti.toLocaleString('id-ID')} KM</td><td>${item.kmKembali.toLocaleString('id-ID')} KM</td>
+                    <td>${formatRupiah(item.harga)}</td><td>${badgeHtml}</td>
+                    <td><button class="btn-delete" onclick="window.deleteService('${item.id}')">Hapus</button></td>
+                </tr>`;
             });
         }
 
         document.getElementById('downloadExcelBtn').addEventListener('click', () => {
-            if (serviceData.length === 0) return alert('Tidak ada data untuk diunduh!');
+            if (serviceData.length === 0) return alert('Tidak ada data!');
             const exportData = serviceData.map((item, index) => ({
-                No: index + 1, 'Tanggal Beli': item.tglBeli, 'Nama Parts': item.namaParts,
-                'KM Ganti': item.kmGanti, 'Service Kembali (KM)': item.kmKembali,
-                'Harga (Rp)': item.harga, Status: currentKm >= item.kmKembali ? 'Waktunya Ganti' : 'Aman'
+                No: index + 1, 'Tanggal': item.tglBeli, 'Parts': item.namaParts,
+                'KM Ganti': item.kmGanti, 'Servis Kembali': item.kmKembali,
+                'Harga': item.harga, Status: currentKm >= item.kmKembali ? 'Waktunya Ganti' : 'Aman'
             }));
-            const worksheet = XLSX.utils.json_to_sheet(exportData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Log Servis");
-            XLSX.writeFile(workbook, `Laporan_Servis_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Log Servis");
+            XLSX.writeFile(wb, `Laporan_Servis.xlsx`);
         });
 
-        // ============================== LOGIKA DATA CASHFLOW & KATEGORI ==============================
-        
-        // 1. Manajamen Kategori
-        let categories = ["Gaji", "Transportasi", "Makan & Minum", "Internet", "Investasi", "Lainnya"];
-        const categoryRef = doc(db, "settings", "cfCategories");
-
-        // Tarik Kategori dari Firebase
-        onSnapshot(categoryRef, (docSnap) => {
-            if (docSnap.exists()) {
-                categories = docSnap.data().list || categories;
-            } else {
-                // Jika baru pertama kali, buat dokumennya
-                setDoc(categoryRef, { list: categories });
-            }
-            renderDropdownKategori();
-        });
-
+        // ============================== LOGIKA DATA CASHFLOW ==============================
         function renderDropdownKategori() {
             const select = document.getElementById('cfKategori');
-            const currentValue = select.value; // Simpan pilihan user sebelumnya
-            
+            const current = select.value;
             select.innerHTML = '<option value="">- Pilih Kategori -</option>';
-            categories.forEach(cat => {
-                select.innerHTML += `<option value="${cat}">${cat}</option>`;
-            });
+            categories.forEach(cat => select.innerHTML += `<option value="${cat}">${cat}</option>`);
             select.innerHTML += `<option value="ADD_NEW" style="font-weight:bold; color:#4f46e5;">+ Tambah Kategori Baru</option>`;
-            
-            // Kembalikan pilihan jika ada
-            if (categories.includes(currentValue)) {
-                select.value = currentValue;
-            }
+            if (categories.includes(current)) select.value = current;
         }
 
-        // Event Listener saat Kategori diganti (Deteksi Tambah Baru)
         document.getElementById('cfKategori').addEventListener('change', async (e) => {
             if (e.target.value === "ADD_NEW") {
-                const newCat = prompt("Ketik nama kategori baru (contoh: Servis Mobil, Cicilan Rumah):");
+                const newCat = prompt("Ketik nama kategori baru:");
                 if (newCat && newCat.trim() !== "") {
-                    // Simpan kategori baru ke Firebase
-                    await setDoc(categoryRef, {
-                        list: arrayUnion(newCat.trim())
-                    }, { merge: true });
-                    alert(`Kategori '${newCat}' berhasil ditambahkan!`);
+                    await setDoc(doc(db, "settings", "cfCategories"), { list: arrayUnion(newCat.trim()) }, { merge: true });
                 }
-                e.target.value = ""; // Reset dropdown sementara nunggu render ulang dari Firebase
+                e.target.value = ""; 
             }
-        });
-
-        // 2. Manajemen Cashflow
-        let cashflowData = [];
-
-        onSnapshot(collection(db, "cashflow"), (snapshot) => {
-            cashflowData = []; 
-            let totalPemasukan = 0;
-            let totalPengeluaran = 0;
-
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                cashflowData.push({ id: doc.id, ...data });
-                
-                if(data.tipe === 'Pemasukan') totalPemasukan += data.nominal;
-                if(data.tipe === 'Pengeluaran') totalPengeluaran += data.nominal;
-            });
-
-            cashflowData.sort((a, b) => a.timestamp - b.timestamp);
-            
-            // Update Card Saldo
-            document.getElementById('pemasukanDisplay').textContent = formatRupiah(totalPemasukan);
-            document.getElementById('pengeluaranDisplay').textContent = formatRupiah(totalPengeluaran);
-            document.getElementById('saldoDisplay').textContent = formatRupiah(totalPemasukan - totalPengeluaran);
-
-            renderCashflowTable();
         });
 
         document.getElementById('addCashflowBtn').addEventListener('click', async () => {
@@ -430,64 +418,42 @@
             const kategori = document.getElementById('cfKategori').value;
             const keterangan = document.getElementById('cfKeterangan').value.trim();
             const nominal = document.getElementById('cfNominal').value;
-
-            if (!tanggal || !kategori || kategori === "ADD_NEW" || !keterangan || !nominal) {
-                return alert('Mohon isi semua kolom (termasuk Kategori)!');
-            }
+            if (!tanggal || !kategori || kategori === "ADD_NEW" || !keterangan || !nominal) return alert('Isi semua kolom!');
 
             await addDoc(collection(db, "cashflow"), {
                 tanggal, tipe, kategori, keterangan, nominal: Number(nominal), timestamp: Date.now()
             });
-
-            // Reset Form tapi biarkan Tipe dan Kategori seperti sebelumnya agar cepat untuk input berulang
-            document.getElementById('cfTanggal').value = '';
-            document.getElementById('cfKeterangan').value = '';
-            document.getElementById('cfNominal').value = '';
+            ['cfTanggal','cfKeterangan','cfNominal'].forEach(id => document.getElementById(id).value = '');
         });
 
-        window.deleteCashflow = async (id) => {
-            if (confirm('Yakin ingin menghapus data cashflow ini?')) await deleteDoc(doc(db, "cashflow", id));
-        };
+        window.deleteCashflow = async (id) => { if (confirm('Hapus data cashflow?')) await deleteDoc(doc(db, "cashflow", id)); };
 
         function renderCashflowTable() {
             const tbody = document.getElementById('tableBodyCf');
             tbody.innerHTML = '';
-            if (cashflowData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">Belum ada data cashflow.</td></tr>`;
-                return;
-            }
+            if (cashflowData.length === 0) return tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Belum ada data cashflow.</td></tr>`;
+            
             cashflowData.forEach((item, index) => {
                 const colorClass = item.tipe === 'Pemasukan' ? 'text-green' : 'text-red';
                 const tipeBadge = item.tipe === 'Pemasukan' ? `<span class="badge badge-aman">Pemasukan</span>` : `<span class="badge badge-ganti">Pengeluaran</span>`;
-                const kategoriTxt = item.kategori || "-";
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${item.tanggal}</td>
-                        <td>${tipeBadge}</td>
-                        <td><span class="badge badge-kategori">${kategoriTxt}</span></td>
-                        <td><strong>${item.keterangan}</strong></td>
-                        <td class="${colorClass}">${formatRupiah(item.nominal)}</td>
-                        <td><button class="btn-delete" onclick="window.deleteCashflow('${item.id}')">Hapus</button></td>
-                    </tr>`;
+                tbody.innerHTML += `<tr>
+                    <td>${index + 1}</td><td>${item.tanggal}</td><td>${tipeBadge}</td>
+                    <td><span class="badge badge-kategori">${item.kategori || "-"}</span></td>
+                    <td><strong>${item.keterangan}</strong></td><td class="${colorClass}">${formatRupiah(item.nominal)}</td>
+                    <td><button class="btn-delete" onclick="window.deleteCashflow('${item.id}')">Hapus</button></td>
+                </tr>`;
             });
         }
 
         document.getElementById('downloadExcelCfBtn').addEventListener('click', () => {
-            if (cashflowData.length === 0) return alert('Tidak ada data cashflow untuk diunduh!');
+            if (cashflowData.length === 0) return alert('Tidak ada data!');
             const exportData = cashflowData.map((item, index) => ({
-                No: index + 1, 
-                Tanggal: item.tanggal, 
-                Tipe: item.tipe,
-                Kategori: item.kategori || "-",
-                Keterangan: item.keterangan, 
-                'Nominal (Rp)': item.nominal
+                No: index + 1, Tanggal: item.tanggal, Tipe: item.tipe,
+                Kategori: item.kategori || "-", Keterangan: item.keterangan, Nominal: item.nominal
             }));
-            const worksheet = XLSX.utils.json_to_sheet(exportData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Log Cashflow");
-            XLSX.writeFile(workbook, `Laporan_Cashflow_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Log Cashflow");
+            XLSX.writeFile(wb, `Laporan_Cashflow.xlsx`);
         });
     </script>
 </body>
