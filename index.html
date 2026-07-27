@@ -69,6 +69,7 @@
         .badge-aman { background-color: #dcfce7; color: #15803d; }
         .badge-ganti { background-color: #fee2e2; color: #dc2626; }
         .badge-kategori { background-color: #e2e8f0; color: #475569; }
+        .badge-sumber { background-color: #dbeafe; color: #1e40af; } /* Style khusus sumber rekening */
     </style>
 </head>
 <body>
@@ -161,6 +162,10 @@
                             <div><label>Tanggal</label><input type="date" id="cfTanggal" class="form-control"></div>
                             <div><label>Tipe</label><select id="cfTipe" class="form-control"><option value="Pemasukan">Pemasukan</option><option value="Pengeluaran" selected>Pengeluaran</option></select></div>
                             <div><label>Kategori</label><select id="cfKategori" class="form-control"><option value="">- Pilih Kategori -</option></select></div>
+                            
+                            <!-- TAMBAHAN SUMBER REKENING -->
+                            <div><label>Sumber</label><select id="cfSumber" class="form-control"><option value="">- Pilih Sumber -</option></select></div>
+
                             <div><label>Keterangan</label><input type="text" id="cfKeterangan" class="form-control" placeholder="Contoh: Gaji / Isi Bensin"></div>
                             <div><label>Nominal (Rp)</label><input type="number" id="cfNominal" class="form-control" placeholder="Contoh: 150000"></div>
                             <button class="btn-submit" id="addCashflowBtn">Catat</button>
@@ -179,7 +184,7 @@
                     </div>
                     <div class="table-responsive">
                         <table id="cashflowTable">
-                            <thead><tr><th>No</th><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></tr></thead>
+                            <thead><tr><th>No</th><th>Tanggal</th><th>Tipe</th><th>Kategori</th><th>Sumber</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></tr></thead>
                             <tbody id="tableBodyCf"></tbody>
                         </table>
                     </div>
@@ -190,7 +195,6 @@
 
     <!-- LOGIKA JAVASCRIPT FIREBASE -->
     <script type="module">
-        // Tambahkan import Autentikasi dari Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -215,46 +219,35 @@
         const btnLogout = document.getElementById('btnLogout');
         const loginError = document.getElementById('loginError');
 
-        // Cek status login (Apakah user sedang login atau tidak)
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Jika sudah login, sembunyikan halaman login dan tampilkan dashboard
                 viewLogin.classList.add('d-none');
                 viewDashboard.classList.remove('d-none');
-                
-                // Panggil fungsi untuk mengambil data (hanya ditarik saat user sudah login)
                 initDataListeners();
             } else {
-                // Jika belum login, tampilkan halaman login
                 viewLogin.classList.remove('d-none');
                 viewDashboard.classList.add('d-none');
             }
         });
 
-        // Event Tombol Login
         btnLogin.addEventListener('click', () => {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            
             btnLogin.textContent = "Loading...";
-            
             signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
+                .then(() => {
                     loginError.style.display = 'none';
                     btnLogin.textContent = "Masuk";
                     document.getElementById('loginPassword').value = '';
                 })
-                .catch((error) => {
+                .catch(() => {
                     loginError.style.display = 'block';
                     btnLogin.textContent = "Masuk";
                 });
         });
 
-        // Event Tombol Logout
         btnLogout.addEventListener('click', () => {
-            if(confirm("Apakah Anda yakin ingin keluar?")) {
-                signOut(auth);
-            }
+            if(confirm("Apakah Anda yakin ingin keluar?")) signOut(auth);
         });
 
         // ============================== LOGIKA UI TABS ==============================
@@ -264,34 +257,30 @@
         const appCashflow = document.getElementById('appCashflow');
 
         navService.addEventListener('click', () => {
-            navService.classList.add('active');
-            navCashflow.classList.remove('active');
-            appService.classList.remove('d-none');
-            appCashflow.classList.add('d-none');
+            navService.classList.add('active'); navCashflow.classList.remove('active');
+            appService.classList.remove('d-none'); appCashflow.classList.add('d-none');
         });
 
         navCashflow.addEventListener('click', () => {
-            navCashflow.classList.add('active');
-            navService.classList.remove('active');
-            appCashflow.classList.remove('d-none');
-            appService.classList.add('d-none');
+            navCashflow.classList.add('active'); navService.classList.remove('active');
+            appCashflow.classList.remove('d-none'); appService.classList.add('d-none');
         });
 
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
-        // ============================== DATABASE INIT (Dipanggil setelah login) ==============================
+        // ============================== DATABASE INIT ==============================
         let currentKm = 0;
         let serviceData = [];
         let cashflowData = [];
         let categories = ["Gaji", "Transportasi", "Makan & Minum", "Internet", "Investasi", "Lainnya"];
+        let sources = ["Bank Mandiri", "BJB"]; // Default Sumber Rekening
         let isDataInitialized = false;
 
         function initDataListeners() {
-            // Mencegah pemanggilan database berulang-ulang
             if (isDataInitialized) return;
             isDataInitialized = true;
 
-            // 1. Ambil Data Service (Motor KM)
+            // 1. Data Service KM
             onSnapshot(doc(db, "settings", "motorData"), (docSnap) => {
                 if (docSnap.exists()) {
                     currentKm = docSnap.data().currentKm || 0;
@@ -300,7 +289,7 @@
                 }
             });
 
-            // 2. Ambil List Data Service
+            // 2. Data Tabel Service
             onSnapshot(collection(db, "services"), (snapshot) => {
                 serviceData = []; 
                 snapshot.forEach((doc) => serviceData.push({ id: doc.id, ...doc.data() }));
@@ -308,22 +297,26 @@
                 renderServiceTable();
             });
 
-            // 3. Ambil Kategori Cashflow
+            // 3. Kategori Cashflow
             const categoryRef = doc(db, "settings", "cfCategories");
             onSnapshot(categoryRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    categories = docSnap.data().list || categories;
-                } else {
-                    setDoc(categoryRef, { list: categories });
-                }
+                if (docSnap.exists()) categories = docSnap.data().list || categories;
+                else setDoc(categoryRef, { list: categories });
                 renderDropdownKategori();
             });
 
-            // 4. Ambil Data Cashflow
+            // 4. Sumber Rekening Cashflow
+            const sourceRef = doc(db, "settings", "cfSources");
+            onSnapshot(sourceRef, (docSnap) => {
+                if (docSnap.exists()) sources = docSnap.data().list || sources;
+                else setDoc(sourceRef, { list: sources });
+                renderDropdownSumber();
+            });
+
+            // 5. Data Tabel Cashflow
             onSnapshot(collection(db, "cashflow"), (snapshot) => {
                 cashflowData = []; 
-                let totalPemasukan = 0;
-                let totalPengeluaran = 0;
+                let totalPemasukan = 0; let totalPengeluaran = 0;
 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
@@ -412,17 +405,41 @@
             }
         });
 
+        function renderDropdownSumber() {
+            const select = document.getElementById('cfSumber');
+            const current = select.value;
+            select.innerHTML = '<option value="">- Pilih Sumber -</option>';
+            sources.forEach(src => select.innerHTML += `<option value="${src}">${src}</option>`);
+            select.innerHTML += `<option value="ADD_NEW" style="font-weight:bold; color:#4f46e5;">+ Tambah Sumber Baru</option>`;
+            if (sources.includes(current)) select.value = current;
+        }
+
+        document.getElementById('cfSumber').addEventListener('change', async (e) => {
+            if (e.target.value === "ADD_NEW") {
+                const newSrc = prompt("Ketik nama sumber rekening baru (contoh: BCA, Dompet):");
+                if (newSrc && newSrc.trim() !== "") {
+                    await setDoc(doc(db, "settings", "cfSources"), { list: arrayUnion(newSrc.trim()) }, { merge: true });
+                }
+                e.target.value = ""; 
+            }
+        });
+
         document.getElementById('addCashflowBtn').addEventListener('click', async () => {
             const tanggal = document.getElementById('cfTanggal').value;
             const tipe = document.getElementById('cfTipe').value;
             const kategori = document.getElementById('cfKategori').value;
+            const sumber = document.getElementById('cfSumber').value;
             const keterangan = document.getElementById('cfKeterangan').value.trim();
             const nominal = document.getElementById('cfNominal').value;
-            if (!tanggal || !kategori || kategori === "ADD_NEW" || !keterangan || !nominal) return alert('Isi semua kolom!');
+            
+            if (!tanggal || !kategori || kategori === "ADD_NEW" || !sumber || sumber === "ADD_NEW" || !keterangan || !nominal) {
+                return alert('Mohon isi semua kolom!');
+            }
 
             await addDoc(collection(db, "cashflow"), {
-                tanggal, tipe, kategori, keterangan, nominal: Number(nominal), timestamp: Date.now()
+                tanggal, tipe, kategori, sumber, keterangan, nominal: Number(nominal), timestamp: Date.now()
             });
+            // Hapus isi form sebagian agar input selanjutnya lebih cepat
             ['cfTanggal','cfKeterangan','cfNominal'].forEach(id => document.getElementById(id).value = '');
         });
 
@@ -431,7 +448,7 @@
         function renderCashflowTable() {
             const tbody = document.getElementById('tableBodyCf');
             tbody.innerHTML = '';
-            if (cashflowData.length === 0) return tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Belum ada data cashflow.</td></tr>`;
+            if (cashflowData.length === 0) return tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">Belum ada data cashflow.</td></tr>`;
             
             cashflowData.forEach((item, index) => {
                 const colorClass = item.tipe === 'Pemasukan' ? 'text-green' : 'text-red';
@@ -439,6 +456,7 @@
                 tbody.innerHTML += `<tr>
                     <td>${index + 1}</td><td>${item.tanggal}</td><td>${tipeBadge}</td>
                     <td><span class="badge badge-kategori">${item.kategori || "-"}</span></td>
+                    <td><span class="badge badge-sumber">${item.sumber || "-"}</span></td>
                     <td><strong>${item.keterangan}</strong></td><td class="${colorClass}">${formatRupiah(item.nominal)}</td>
                     <td><button class="btn-delete" onclick="window.deleteCashflow('${item.id}')">Hapus</button></td>
                 </tr>`;
@@ -449,7 +467,8 @@
             if (cashflowData.length === 0) return alert('Tidak ada data!');
             const exportData = cashflowData.map((item, index) => ({
                 No: index + 1, Tanggal: item.tanggal, Tipe: item.tipe,
-                Kategori: item.kategori || "-", Keterangan: item.keterangan, Nominal: item.nominal
+                Kategori: item.kategori || "-", Sumber: item.sumber || "-",
+                Keterangan: item.keterangan, Nominal: item.nominal
             }));
             const ws = XLSX.utils.json_to_sheet(exportData);
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Log Cashflow");
