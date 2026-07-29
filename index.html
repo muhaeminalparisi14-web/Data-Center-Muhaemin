@@ -69,7 +69,11 @@
         .badge-aman { background-color: #dcfce7; color: #15803d; }
         .badge-ganti { background-color: #fee2e2; color: #dc2626; }
         .badge-kategori { background-color: #e2e8f0; color: #475569; }
-        .badge-sumber { background-color: #dbeafe; color: #1e40af; } /* Style khusus sumber rekening */
+        .badge-sumber { background-color: #dbeafe; color: #1e40af; }
+        
+        /* Tambahan style untuk frame CCTV */
+        .cctv-frame { width: 100%; height: 250px; background-color: #0f172a; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b; overflow: hidden; position: relative; }
+        .cctv-frame iframe, .cctv-frame img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -102,6 +106,8 @@
             <ul class="menu-list">
                 <li class="menu-item"><a id="navService" class="menu-link active">Data Service</a></li>
                 <li class="menu-item"><a id="navCashflow" class="menu-link">Cashflow</a></li>
+                <!-- MENU CCTV BARU -->
+                <li class="menu-item"><a id="navCctv" class="menu-link">CCTV Rumah</a></li>
             </ul>
             <button class="btn-logout" id="btnLogout">🚪 Keluar (Logout)</button>
         </aside>
@@ -115,6 +121,7 @@
 
             <!-- VIEW: DATA SERVICE -->
             <div id="appService">
+                <!-- Konten Service Anda yang lama tetap sama -->
                 <section class="input-section">
                     <div class="form-group">
                         <label for="kmInput">KM Motor Saat Ini</label>
@@ -155,6 +162,7 @@
 
             <!-- VIEW: CASHFLOW -->
             <div id="appCashflow" class="d-none">
+                <!-- Konten Cashflow Anda yang lama tetap sama -->
                 <section class="input-section">
                     <div class="form-group">
                         <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Pemasukan & Pengeluaran</label>
@@ -162,10 +170,7 @@
                             <div><label>Tanggal</label><input type="date" id="cfTanggal" class="form-control"></div>
                             <div><label>Tipe</label><select id="cfTipe" class="form-control"><option value="Pemasukan">Pemasukan</option><option value="Pengeluaran" selected>Pengeluaran</option></select></div>
                             <div><label>Kategori</label><select id="cfKategori" class="form-control"><option value="">- Pilih Kategori -</option></select></div>
-                            
-                            <!-- TAMBAHAN SUMBER REKENING -->
                             <div><label>Sumber</label><select id="cfSumber" class="form-control"><option value="">- Pilih Sumber -</option></select></div>
-
                             <div><label>Keterangan</label><input type="text" id="cfKeterangan" class="form-control" placeholder="Contoh: Gaji / Isi Bensin"></div>
                             <div><label>Nominal (Rp)</label><input type="number" id="cfNominal" class="form-control" placeholder="Contoh: 150000"></div>
                             <button class="btn-submit" id="addCashflowBtn">Catat</button>
@@ -190,6 +195,41 @@
                     </div>
                 </section>
             </div>
+
+            <!-- VIEW BARU: CCTV RUMAH -->
+            <div id="appCctv" class="d-none">
+                <section class="card-grid">
+                    <!-- Kamera 1 -->
+                    <div class="card">
+                        <div class="card-title">Kamera Depan (Garasi)</div>
+                        <div class="cctv-frame">
+                            <!-- Ganti elemen di bawah ini dengan script/iframe/IP kamera Anda -->
+                            <span>No Video Feed (Pasang URL/IP CCTV di Sini)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Kamera 2 -->
+                    <div class="card">
+                        <div class="card-title">Kamera Ruang Tengah</div>
+                        <div class="cctv-frame">
+                            <!-- Ganti elemen di bawah ini dengan script/iframe/IP kamera Anda -->
+                            <span>No Video Feed (Pasang URL/IP CCTV di Sini)</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="input-section">
+                    <h3 style="margin-bottom: 1rem; color: #1e1b4b;">Cara Menghubungkan Kamera ke Sini</h3>
+                    <p style="color: #475569; font-size: 0.95rem; line-height: 1.6;">
+                        Tergantung pada merek CCTV Anda, Anda dapat mengganti teks <code>&lt;span&gt;No Video Feed...&lt;/span&gt;</code> pada HTML di atas dengan cara berikut:
+                    </p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem; color: #475569; font-size: 0.95rem; line-height: 1.6;">
+                        <li style="margin-bottom: 0.5rem;"><strong>IP Camera Lokal (MJPEG):</strong><br>Jika kamera Anda mendukung *stream* lokal di *browser*, gunakan tag gambar:<br><code>&lt;img src="http://IP_Kamera_Anda/video.cgi" /&gt;</code></li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Cloud Web Viewer / NVR:</strong><br>Gunakan fitur sematkan (*embed*) Iframe:<br><code>&lt;iframe src="URL_WEB_CCTV_ANDA" frameborder="0"&gt;&lt;/iframe&gt;</code></li>
+                    </ul>
+                </section>
+            </div>
+
         </main>
     </div>
 
@@ -250,20 +290,28 @@
             if(confirm("Apakah Anda yakin ingin keluar?")) signOut(auth);
         });
 
-        // ============================== LOGIKA UI TABS ==============================
+        // ============================== LOGIKA UI TABS (DIPERBARUI UNTUK CCTV) ==============================
         const navService = document.getElementById('navService');
         const navCashflow = document.getElementById('navCashflow');
+        const navCctv = document.getElementById('navCctv'); // Tab CCTV
+        
         const appService = document.getElementById('appService');
         const appCashflow = document.getElementById('appCashflow');
+        const appCctv = document.getElementById('appCctv'); // Panel CCTV
 
         navService.addEventListener('click', () => {
-            navService.classList.add('active'); navCashflow.classList.remove('active');
-            appService.classList.remove('d-none'); appCashflow.classList.add('d-none');
+            navService.classList.add('active'); navCashflow.classList.remove('active'); navCctv.classList.remove('active');
+            appService.classList.remove('d-none'); appCashflow.classList.add('d-none'); appCctv.classList.add('d-none');
         });
 
         navCashflow.addEventListener('click', () => {
-            navCashflow.classList.add('active'); navService.classList.remove('active');
-            appCashflow.classList.remove('d-none'); appService.classList.add('d-none');
+            navCashflow.classList.add('active'); navService.classList.remove('active'); navCctv.classList.remove('active');
+            appCashflow.classList.remove('d-none'); appService.classList.add('d-none'); appCctv.classList.add('d-none');
+        });
+
+        navCctv.addEventListener('click', () => {
+            navCctv.classList.add('active'); navService.classList.remove('active'); navCashflow.classList.remove('active');
+            appCctv.classList.remove('d-none'); appService.classList.add('d-none'); appCashflow.classList.add('d-none');
         });
 
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
@@ -273,7 +321,7 @@
         let serviceData = [];
         let cashflowData = [];
         let categories = ["Gaji", "Transportasi", "Makan & Minum", "Internet", "Investasi", "Lainnya"];
-        let sources = ["Bank Mandiri", "BJB"]; // Default Sumber Rekening
+        let sources = ["Bank Mandiri", "BJB"]; 
         let isDataInitialized = false;
 
         function initDataListeners() {
@@ -439,7 +487,6 @@
             await addDoc(collection(db, "cashflow"), {
                 tanggal, tipe, kategori, sumber, keterangan, nominal: Number(nominal), timestamp: Date.now()
             });
-            // Hapus isi form sebagian agar input selanjutnya lebih cepat
             ['cfTanggal','cfKeterangan','cfNominal'].forEach(id => document.getElementById(id).value = '');
         });
 
