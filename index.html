@@ -252,6 +252,30 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // ============================== LOGIKA SESSION TIMEOUT (30 MENIT) ==============================
+        let inactivityTimer;
+        const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 menit dalam milidetik
+
+        function logoutDueToInactivity() {
+            if (auth.currentUser) {
+                alert("Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan login kembali.");
+                signOut(auth);
+            }
+        }
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            if (auth.currentUser) {
+                inactivityTimer = setTimeout(logoutDueToInactivity, INACTIVITY_LIMIT);
+            }
+        }
+
+        const activityEvents = ['mousemove', 'mousedown', 'keypress', 'touchmove', 'scroll', 'click'];
+        activityEvents.forEach(event => {
+            window.addEventListener(event, resetInactivityTimer);
+        });
+        // ===============================================================================================
+
         // ============================== LOGIKA LOGIN & LOGOUT ==============================
         const viewLogin = document.getElementById('viewLogin');
         const viewDashboard = document.getElementById('viewDashboard');
@@ -264,9 +288,15 @@
                 viewLogin.classList.add('d-none');
                 viewDashboard.classList.remove('d-none');
                 initDataListeners();
+                
+                // Mulai hitung mundur 30 menit saat berhasil login
+                resetInactivityTimer(); 
             } else {
                 viewLogin.classList.remove('d-none');
                 viewDashboard.classList.add('d-none');
+                
+                // Bersihkan timer jika user logout
+                clearTimeout(inactivityTimer); 
             }
         });
 
@@ -290,7 +320,7 @@
             if(confirm("Apakah Anda yakin ingin keluar?")) signOut(auth);
         });
 
-        // ============================== LOGIKA UI TABS (DIPERBARUI UNTUK CCTV) ==============================
+        // ============================== LOGIKA UI TABS ==============================
         const navService = document.getElementById('navService');
         const navCashflow = document.getElementById('navCashflow');
         const navCctv = document.getElementById('navCctv'); // Tab CCTV
