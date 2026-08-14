@@ -31,8 +31,12 @@
         .login-error { color: #ef4444; font-size: 0.85rem; margin-top: 1rem; display: none; }
 
         /* ================== APP STYLE ================== */
-        #viewDashboard { width: 100%; height: 100%; display: flex; }
-        .sidebar { width: 260px; background-color: #1e1b4b; color: #ffffff; padding: 2rem 1.5rem; flex-shrink: 0; display: flex; flex-direction: column; }
+        #viewDashboard { width: 100%; height: 100%; display: flex; position: relative; }
+        
+        /* Modifikasi transisi sidebar di sini */
+        .sidebar { width: 260px; background-color: #1e1b4b; color: #ffffff; padding: 2rem 1.5rem; flex-shrink: 0; display: flex; flex-direction: column; transition: margin-left 0.3s ease; z-index: 999; }
+        .sidebar.collapsed { margin-left: -260px; } /* Untuk Desktop */
+
         .brand { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 3rem; color: #f3f4f6; text-transform: uppercase; }
         .menu-list { list-style: none; flex-grow: 1; }
         .menu-item { margin-bottom: 0.5rem; }
@@ -71,9 +75,39 @@
         .badge-kategori { background-color: #e2e8f0; color: #475569; }
         .badge-sumber { background-color: #dbeafe; color: #1e40af; }
         
-        /* Tambahan style untuk frame CCTV */
         .cctv-frame { width: 100%; height: 250px; background-color: #0f172a; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b; overflow: hidden; position: relative; }
         .cctv-frame iframe, .cctv-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* ================== TOMBOL TOGGLE STYLE ================== */
+        .btn-toggle {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .btn-toggle:hover { background-color: #4338ca; }
+
+        /* Responsive Mobile untuk Sidebar */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute; /* Mengambang di atas konten */
+                height: 100%;
+                margin-left: -260px; /* Sembunyikan default di HP */
+            }
+            .sidebar.show-mobile { margin-left: 0; } /* Munculkan saat tombol diklik di HP */
+            
+            /* Sembunyikan tombol toggle dari flex header agar layout tetap rapi di HP */
+            .header { align-items: flex-start !important; flex-direction: column; }
+            .header .btn-toggle { margin-bottom: 1rem; }
+        }
     </style>
 </head>
 <body>
@@ -106,7 +140,6 @@
             <ul class="menu-list">
                 <li class="menu-item"><a id="navService" class="menu-link active">Data Service</a></li>
                 <li class="menu-item"><a id="navCashflow" class="menu-link">Cashflow</a></li>
-                <!-- MENU CCTV BARU -->
                 <li class="menu-item"><a id="navCctv" class="menu-link">CCTV Rumah</a></li>
             </ul>
             <button class="btn-logout" id="btnLogout">🚪 Keluar (Logout)</button>
@@ -114,14 +147,17 @@
 
         <!-- Konten Utama -->
         <main class="main-content">
-            <header class="header">
-                <h1>Selamat Datang, Muhaemin</h1>
-                <p>Berikut data real-time kamu.</p>
+            <!-- Header Baru dengan Tombol Toggle -->
+            <header class="header" style="display: flex; align-items: center; gap: 1rem;">
+                <button id="btnToggleSidebar" class="btn-toggle">☰</button>
+                <div>
+                    <h1>Selamat Datang, Muhaemin</h1>
+                    <p>Berikut data real-time kamu.</p>
+                </div>
             </header>
 
             <!-- VIEW: DATA SERVICE -->
             <div id="appService">
-                <!-- Konten Service Anda yang lama tetap sama -->
                 <section class="input-section">
                     <div class="form-group">
                         <label for="kmInput">KM Motor Saat Ini</label>
@@ -162,7 +198,6 @@
 
             <!-- VIEW: CASHFLOW -->
             <div id="appCashflow" class="d-none">
-                <!-- Konten Cashflow Anda yang lama tetap sama -->
                 <section class="input-section">
                     <div class="form-group">
                         <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Pemasukan & Pengeluaran</label>
@@ -196,23 +231,18 @@
                 </section>
             </div>
 
-            <!-- VIEW BARU: CCTV RUMAH -->
+            <!-- VIEW: CCTV RUMAH -->
             <div id="appCctv" class="d-none">
                 <section class="card-grid">
-                    <!-- Kamera 1 -->
                     <div class="card">
                         <div class="card-title">Kamera Depan (Garasi)</div>
                         <div class="cctv-frame">
-                            <!-- Ganti elemen di bawah ini dengan script/iframe/IP kamera Anda -->
                             <span>No Video Feed (Pasang URL/IP CCTV di Sini)</span>
                         </div>
                     </div>
-                    
-                    <!-- Kamera 2 -->
                     <div class="card">
                         <div class="card-title">Kamera Ruang Tengah</div>
                         <div class="cctv-frame">
-                            <!-- Ganti elemen di bawah ini dengan script/iframe/IP kamera Anda -->
                             <span>No Video Feed (Pasang URL/IP CCTV di Sini)</span>
                         </div>
                     </div>
@@ -233,7 +263,7 @@
         </main>
     </div>
 
-    <!-- LOGIKA JAVASCRIPT FIREBASE -->
+    <!-- LOGIKA JAVASCRIPT FIREBASE & UI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -254,7 +284,7 @@
 
         // ============================== LOGIKA SESSION TIMEOUT (30 MENIT) ==============================
         let inactivityTimer;
-        const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 menit dalam milidetik
+        const INACTIVITY_LIMIT = 30 * 60 * 1000;
 
         function logoutDueToInactivity() {
             if (auth.currentUser) {
@@ -274,7 +304,6 @@
         activityEvents.forEach(event => {
             window.addEventListener(event, resetInactivityTimer);
         });
-        // ===============================================================================================
 
         // ============================== LOGIKA LOGIN & LOGOUT ==============================
         const viewLogin = document.getElementById('viewLogin');
@@ -288,14 +317,10 @@
                 viewLogin.classList.add('d-none');
                 viewDashboard.classList.remove('d-none');
                 initDataListeners();
-                
-                // Mulai hitung mundur 30 menit saat berhasil login
                 resetInactivityTimer(); 
             } else {
                 viewLogin.classList.remove('d-none');
                 viewDashboard.classList.add('d-none');
-                
-                // Bersihkan timer jika user logout
                 clearTimeout(inactivityTimer); 
             }
         });
@@ -320,28 +345,44 @@
             if(confirm("Apakah Anda yakin ingin keluar?")) signOut(auth);
         });
 
+        // ============================== LOGIKA TOGGLE SIDEBAR ==============================
+        const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+        const sidebar = document.querySelector('.sidebar');
+
+        btnToggleSidebar.addEventListener('click', () => {
+            // Cek lebar layar (768px ke bawah biasanya HP/Tablet)
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('show-mobile');
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+        });
+
         // ============================== LOGIKA UI TABS ==============================
         const navService = document.getElementById('navService');
         const navCashflow = document.getElementById('navCashflow');
-        const navCctv = document.getElementById('navCctv'); // Tab CCTV
+        const navCctv = document.getElementById('navCctv');
         
         const appService = document.getElementById('appService');
         const appCashflow = document.getElementById('appCashflow');
-        const appCctv = document.getElementById('appCctv'); // Panel CCTV
+        const appCctv = document.getElementById('appCctv');
 
         navService.addEventListener('click', () => {
             navService.classList.add('active'); navCashflow.classList.remove('active'); navCctv.classList.remove('active');
             appService.classList.remove('d-none'); appCashflow.classList.add('d-none'); appCctv.classList.add('d-none');
+            if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile'); // Tutup sidebar di HP saat tab diklik
         });
 
         navCashflow.addEventListener('click', () => {
             navCashflow.classList.add('active'); navService.classList.remove('active'); navCctv.classList.remove('active');
             appCashflow.classList.remove('d-none'); appService.classList.add('d-none'); appCctv.classList.add('d-none');
+            if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile');
         });
 
         navCctv.addEventListener('click', () => {
             navCctv.classList.add('active'); navService.classList.remove('active'); navCashflow.classList.remove('active');
             appCctv.classList.remove('d-none'); appService.classList.add('d-none'); appCashflow.classList.add('d-none');
+            if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile');
         });
 
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
@@ -553,4 +594,4 @@
         });
     </script>
 </body>
-</html>
+</html>	
