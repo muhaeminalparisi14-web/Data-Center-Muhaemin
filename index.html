@@ -33,9 +33,8 @@
         /* ================== APP STYLE ================== */
         #viewDashboard { width: 100%; height: 100%; display: flex; position: relative; }
         
-        /* Modifikasi transisi sidebar di sini */
         .sidebar { width: 260px; background-color: #1e1b4b; color: #ffffff; padding: 2rem 1.5rem; flex-shrink: 0; display: flex; flex-direction: column; transition: margin-left 0.3s ease; z-index: 999; }
-        .sidebar.collapsed { margin-left: -260px; } /* Untuk Desktop */
+        .sidebar.collapsed { margin-left: -260px; }
 
         .brand { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 3rem; color: #f3f4f6; text-transform: uppercase; }
         .menu-list { list-style: none; flex-grow: 1; }
@@ -78,7 +77,6 @@
         .cctv-frame { width: 100%; height: 250px; background-color: #0f172a; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b; overflow: hidden; position: relative; }
         .cctv-frame iframe, .cctv-frame img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* ================== TOMBOL TOGGLE STYLE ================== */
         .btn-toggle {
             background-color: #4f46e5;
             color: white;
@@ -95,16 +93,13 @@
         }
         .btn-toggle:hover { background-color: #4338ca; }
 
-        /* Responsive Mobile untuk Sidebar */
         @media (max-width: 768px) {
             .sidebar {
-                position: absolute; /* Mengambang di atas konten */
+                position: absolute;
                 height: 100%;
-                margin-left: -260px; /* Sembunyikan default di HP */
+                margin-left: -260px;
             }
-            .sidebar.show-mobile { margin-left: 0; } /* Munculkan saat tombol diklik di HP */
-            
-            /* Sembunyikan tombol toggle dari flex header agar layout tetap rapi di HP */
+            .sidebar.show-mobile { margin-left: 0; }
             .header { align-items: flex-start !important; flex-direction: column; }
             .header .btn-toggle { margin-bottom: 1rem; }
         }
@@ -112,7 +107,7 @@
 </head>
 <body>
 
-    <!-- ============================== HALAMAN LOGIN ============================== -->
+    <!-- HALAMAN LOGIN -->
     <div id="viewLogin">
         <div class="login-card">
             <h2>Data Center</h2>
@@ -132,9 +127,8 @@
         </div>
     </div>
 
-    <!-- ============================== APLIKASI UTAMA (DASHBOARD) ============================== -->
+    <!-- APLIKASI UTAMA (DASHBOARD) -->
     <div id="viewDashboard" class="d-none">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="brand">Muhaemin<br>Alparisi</div>
             <ul class="menu-list">
@@ -145,9 +139,7 @@
             <button class="btn-logout" id="btnLogout">🚪 Keluar (Logout)</button>
         </aside>
 
-        <!-- Konten Utama -->
         <main class="main-content">
-            <!-- Header Baru dengan Tombol Toggle -->
             <header class="header" style="display: flex; align-items: center; gap: 1rem;">
                 <button id="btnToggleSidebar" class="btn-toggle">☰</button>
                 <div>
@@ -217,6 +209,10 @@
                     <div class="card"><div class="card-title">Total Pemasukan</div><div class="card-value text-green" id="pemasukanDisplay">Rp 0</div></div>
                     <div class="card"><div class="card-title">Total Pengeluaran</div><div class="card-value text-red" id="pengeluaranDisplay">Rp 0</div></div>
                 </section>
+
+                <div style="margin-bottom: 1rem;"><h3 style="font-size: 1.1rem; color: #475569;">Saldo Per Bank / Sumber Rekening</h3></div>
+                <section class="card-grid" id="bankBalanceGrid"></section>
+
                 <section class="table-section">
                     <div class="table-header-wrapper">
                         <h2 class="section-title">Log Cashflow</h2>
@@ -263,7 +259,6 @@
         </main>
     </div>
 
-    <!-- LOGIKA JAVASCRIPT FIREBASE & UI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -282,7 +277,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ============================== LOGIKA SESSION TIMEOUT (30 MENIT) ==============================
         let inactivityTimer;
         const INACTIVITY_LIMIT = 30 * 60 * 1000;
 
@@ -305,7 +299,6 @@
             window.addEventListener(event, resetInactivityTimer);
         });
 
-        // ============================== LOGIKA LOGIN & LOGOUT ==============================
         const viewLogin = document.getElementById('viewLogin');
         const viewDashboard = document.getElementById('viewDashboard');
         const btnLogin = document.getElementById('btnLogin');
@@ -345,12 +338,10 @@
             if(confirm("Apakah Anda yakin ingin keluar?")) signOut(auth);
         });
 
-        // ============================== LOGIKA TOGGLE SIDEBAR ==============================
         const btnToggleSidebar = document.getElementById('btnToggleSidebar');
         const sidebar = document.querySelector('.sidebar');
 
         btnToggleSidebar.addEventListener('click', () => {
-            // Cek lebar layar (768px ke bawah biasanya HP/Tablet)
             if (window.innerWidth <= 768) {
                 sidebar.classList.toggle('show-mobile');
             } else {
@@ -358,7 +349,6 @@
             }
         });
 
-        // ============================== LOGIKA UI TABS ==============================
         const navService = document.getElementById('navService');
         const navCashflow = document.getElementById('navCashflow');
         const navCctv = document.getElementById('navCctv');
@@ -370,7 +360,7 @@
         navService.addEventListener('click', () => {
             navService.classList.add('active'); navCashflow.classList.remove('active'); navCctv.classList.remove('active');
             appService.classList.remove('d-none'); appCashflow.classList.add('d-none'); appCctv.classList.add('d-none');
-            if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile'); // Tutup sidebar di HP saat tab diklik
+            if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile');
         });
 
         navCashflow.addEventListener('click', () => {
@@ -387,7 +377,6 @@
 
         const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 
-        // ============================== DATABASE INIT ==============================
         let currentKm = 0;
         let serviceData = [];
         let cashflowData = [];
@@ -395,11 +384,49 @@
         let sources = ["Bank Mandiri", "BJB"]; 
         let isDataInitialized = false;
 
+        function renderBankBalances() {
+            const grid = document.getElementById('bankBalanceGrid');
+            if (!grid) return;
+
+            const balances = {};
+            sources.forEach(src => balances[src] = 0);
+
+            cashflowData.forEach(item => {
+                if (item.sumber) {
+                    if (!(item.sumber in balances)) balances[item.sumber] = 0;
+                    
+                    if (item.tipe === 'Pemasukan') {
+                        balances[item.sumber] += item.nominal;
+                    } else if (item.tipe === 'Pengeluaran') {
+                        balances[item.sumber] -= item.nominal;
+                    }
+                }
+            });
+
+            grid.innerHTML = '';
+            const bankNames = Object.keys(balances);
+
+            if (bankNames.length === 0) {
+                grid.innerHTML = `<div class="card"><div class="card-title">Belum ada data bank</div></div>`;
+                return;
+            }
+
+            bankNames.forEach(bank => {
+                const nominal = balances[bank];
+                const colorClass = nominal < 0 ? 'text-red' : '';
+                grid.innerHTML += `
+                    <div class="card">
+                        <div class="card-title">Saldo ${bank}</div>
+                        <div class="card-value ${colorClass}">${formatRupiah(nominal)}</div>
+                    </div>
+                `;
+            });
+        }
+
         function initDataListeners() {
             if (isDataInitialized) return;
             isDataInitialized = true;
 
-            // 1. Data Service KM
             onSnapshot(doc(db, "settings", "motorData"), (docSnap) => {
                 if (docSnap.exists()) {
                     currentKm = docSnap.data().currentKm || 0;
@@ -408,7 +435,6 @@
                 }
             });
 
-            // 2. Data Tabel Service
             onSnapshot(collection(db, "services"), (snapshot) => {
                 serviceData = []; 
                 snapshot.forEach((doc) => serviceData.push({ id: doc.id, ...doc.data() }));
@@ -416,7 +442,6 @@
                 renderServiceTable();
             });
 
-            // 3. Kategori Cashflow
             const categoryRef = doc(db, "settings", "cfCategories");
             onSnapshot(categoryRef, (docSnap) => {
                 if (docSnap.exists()) categories = docSnap.data().list || categories;
@@ -424,15 +449,14 @@
                 renderDropdownKategori();
             });
 
-            // 4. Sumber Rekening Cashflow
             const sourceRef = doc(db, "settings", "cfSources");
             onSnapshot(sourceRef, (docSnap) => {
                 if (docSnap.exists()) sources = docSnap.data().list || sources;
                 else setDoc(sourceRef, { list: sources });
                 renderDropdownSumber();
+                renderBankBalances();
             });
 
-            // 5. Data Tabel Cashflow
             onSnapshot(collection(db, "cashflow"), (snapshot) => {
                 cashflowData = []; 
                 let totalPemasukan = 0; let totalPengeluaran = 0;
@@ -449,10 +473,10 @@
                 document.getElementById('pengeluaranDisplay').textContent = formatRupiah(totalPengeluaran);
                 document.getElementById('saldoDisplay').textContent = formatRupiah(totalPemasukan - totalPengeluaran);
                 renderCashflowTable();
+                renderBankBalances();
             });
         }
 
-        // ============================== LOGIKA DATA SERVICE ==============================
         document.getElementById('updateKmBtn').addEventListener('click', async () => {
             const inputVal = document.getElementById('kmInput').value;
             if (inputVal === '' || Number(inputVal) < 0) return alert('Masukkan KM valid!');
@@ -504,7 +528,6 @@
             XLSX.writeFile(wb, `Laporan_Servis.xlsx`);
         });
 
-        // ============================== LOGIKA DATA CASHFLOW ==============================
         function renderDropdownKategori() {
             const select = document.getElementById('cfKategori');
             const current = select.value;
@@ -594,4 +617,4 @@
         });
     </script>
 </body>
-</html>	
+</html>
