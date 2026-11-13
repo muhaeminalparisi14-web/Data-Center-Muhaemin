@@ -33,16 +33,25 @@
         /* ================== APP STYLE ================== */
         #viewDashboard { width: 100%; height: 100%; display: flex; position: relative; }
         
-        .sidebar { width: 260px; background-color: #1e1b4b; color: #ffffff; padding: 2rem 1.5rem; flex-shrink: 0; display: flex; flex-direction: column; transition: margin-left 0.3s ease; z-index: 999; }
+        .sidebar { width: 260px; background-color: #1e1b4b; color: #ffffff; padding: 2rem 1.5rem; flex-shrink: 0; display: flex; flex-direction: column; transition: margin-left 0.3s ease; z-index: 999; overflow-y: auto; }
         .sidebar.collapsed { margin-left: -260px; }
 
         .brand { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin-bottom: 3rem; color: #f3f4f6; text-transform: uppercase; }
         .menu-list { list-style: none; flex-grow: 1; }
         .menu-item { margin-bottom: 0.5rem; }
-        .menu-link { display: block; padding: 0.8rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 8px; font-weight: 500; cursor: pointer; }
+        .menu-link { display: block; padding: 0.8rem 1rem; color: #94a3b8; text-decoration: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .menu-link:hover { color: #ffffff; background-color: rgba(255,255,255,0.05); }
         .menu-link.active { background-color: #4f46e5; color: #ffffff; }
+
+        /* Sub Menu Styling */
+        .has-submenu .menu-link { display: flex; justify-content: space-between; align-items: center; }
+        .arrow-icon { font-size: 1.1rem; font-weight: bold; color: #94a3b8; transition: transform 0.25s ease; }
+        .submenu { list-style: none; padding-left: 1rem; margin-top: 0.2rem; display: none; }
+        .submenu.open { display: block; }
+        .submenu .menu-link { padding: 0.6rem 1rem; font-size: 0.9rem; color: #94a3b8; }
+        .submenu .menu-link.active { background-color: #4338ca; color: #ffffff; }
         
-        .btn-logout { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; }
+        .btn-logout { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; margin-top: 1rem; }
         .btn-logout:hover { background: #ef4444; color: white; }
 
         .main-content { flex-grow: 1; padding: 2rem; overflow-y: auto; background-color: #f4f7fe; }
@@ -56,12 +65,13 @@
         .form-control:focus { border-color: #4f46e5; }
         .btn-submit { background-color: #4f46e5; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; height: 43px; }
         .btn-delete { background-color: #ef4444; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-        .btn-excel { background-color: #16a34a; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+        .btn-toggle-sub { background-color: #0284c7; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .btn-excel { background-color: #16a34a; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .card { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
         .card-title { font-size: 0.9rem; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem; }
         .card-value { font-size: 2rem; font-weight: 700; }
-        .table-section { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .table-section { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem; }
         .table-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .table-responsive { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
@@ -135,8 +145,19 @@
                 <li class="menu-item"><a id="navService" class="menu-link active">Data Service</a></li>
                 <li class="menu-item"><a id="navCashflow" class="menu-link">Cashflow</a></li>
                 <li class="menu-item"><a id="navCctv" class="menu-link">CCTV Rumah</a></li>
+                
+                <!-- MENU KERJA DENGAN SUB-MENU ANGKUTAN -->
+                <li class="menu-item has-submenu">
+                    <a id="navKerjaToggle" class="menu-link">
+                        <span>Kerja</span>
+                        <span class="arrow-icon" id="arrowKerja">›</span>
+                    </a>
+                    <ul class="submenu" id="submenuKerja">
+                        <li class="menu-item"><a id="navAngkutan" class="menu-link">Angkutan</a></li>
+                    </ul>
+                </li>
             </ul>
-            <button class="btn-logout" id="btnLogout">🚪 Keluar (Logout)</button>
+            <button class="btn-logout" id="btnLogout">Keluar (Logout)</button>
         </aside>
 
         <main class="main-content">
@@ -177,7 +198,7 @@
                 <section class="table-section">
                     <div class="table-header-wrapper">
                         <h2 class="section-title">Log Perawatan & Sparepart</h2>
-                        <button class="btn-excel" id="downloadExcelBtn">📊 Download Laporan</button>
+                        <button class="btn-excel" id="downloadExcelBtn" style="font-size: 0.9rem; padding: 0.6rem 1.2rem;">📊 Download Laporan</button>
                     </div>
                     <div class="table-responsive">
                         <table id="serviceTable">
@@ -216,7 +237,7 @@
                 <section class="table-section">
                     <div class="table-header-wrapper">
                         <h2 class="section-title">Log Cashflow</h2>
-                        <button class="btn-excel" id="downloadExcelCfBtn">📊 Download Laporan</button>
+                        <button class="btn-excel" id="downloadExcelCfBtn" style="font-size: 0.9rem; padding: 0.6rem 1.2rem;">📊 Download Laporan</button>
                     </div>
                     <div class="table-responsive">
                         <table id="cashflowTable">
@@ -253,6 +274,62 @@
                         <li style="margin-bottom: 0.5rem;"><strong>IP Camera Lokal (MJPEG):</strong><br>Jika kamera Anda mendukung *stream* lokal di *browser*, gunakan tag gambar:<br><code>&lt;img src="http://IP_Kamera_Anda/video.cgi" /&gt;</code></li>
                         <li style="margin-bottom: 0.5rem;"><strong>Cloud Web Viewer / NVR:</strong><br>Gunakan fitur sematkan (*embed*) Iframe:<br><code>&lt;iframe src="URL_WEB_CCTV_ANDA" frameborder="0"&gt;&lt;/iframe&gt;</code></li>
                     </ul>
+                </section>
+            </div>
+
+            <!-- VIEW: ANGKUTAN (SUB-MENU KERJA) -->
+            <div id="appAngkutan" class="d-none">
+                <!-- 1. Form Input Proyek -->
+                <section class="input-section">
+                    <div class="form-group">
+                        <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Data Kapal</label>
+                        <div class="form-grid">
+                            <div><label>Nama Kapal</label><input type="text" id="proyekNama" class="form-control" placeholder="Contoh: MV. MASK"></div>
+                            <div><label>Jenis Cargo</label><input type="text" id="proyekCargo" class="form-control" placeholder="Contoh: Batubara"></div>
+                            <div><label>Tonase (Total)</label><input type="number" id="proyekTonase" class="form-control" placeholder="Contoh: 50"></div>
+                            <button class="btn-submit" id="addProyekBtn">Simpan Proyek</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Form Input Angkutan -->
+                <section class="input-section">
+                    <div class="form-group">
+                        <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Data Angkutan</label>
+                        <div class="form-grid">
+                            <div><label>Tanggal</label><input type="date" id="angTgl" class="form-control"></div>
+                            <div><label>Pilih Kapal</label><select id="angProyek" class="form-control"><option value="">- Pilih Kapal -</option></select></div>
+                            <div><label>Nomor Polisi</label><input type="text" id="angNopol" class="form-control" placeholder="Contoh: B 1234 XYZ"></div>
+                            <div><label>Vendor</label><input type="text" id="angVendor" class="form-control" placeholder="Contoh: PT Maju Jaya"></div>
+                            <div><label>Jumlah Pcs</label><input type="number" id="angPcs" class="form-control" placeholder="Contoh: 50"></div>
+                            <div><label>Tonase Angkutan</label><input type="number" id="angTonase" class="form-control" placeholder="Contoh: 10"></div>
+                            <button class="btn-submit" id="addAngkutanBtn">Tambah Angkutan</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tabel Data Proyek -->
+                <section class="table-section">
+                    <div class="table-header-wrapper">
+                        <h2 class="section-title">Daftar Kapal & Data Angkutan</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="proyekTable">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Kapal</th>
+                                    <th>Jenis Cargo</th>
+                                    <th>Tonase Awal</th>
+                                    <th>Tonase Sisa</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBodyProyek">
+                                <tr><td colspan="6" style="text-align: center; color: #64748b;">Belum ada data proyek.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </section>
             </div>
 
@@ -349,29 +426,63 @@
             }
         });
 
+        // Toggle Dropdown Menu Kerja
+        const navKerjaToggle = document.getElementById('navKerjaToggle');
+        const submenuKerja = document.getElementById('submenuKerja');
+        const arrowKerja = document.getElementById('arrowKerja');
+
+        navKerjaToggle.addEventListener('click', () => {
+            submenuKerja.classList.toggle('open');
+            arrowKerja.style.transform = submenuKerja.classList.contains('open') ? 'rotate(90deg)' : 'rotate(0deg)';
+        });
+
         const navService = document.getElementById('navService');
         const navCashflow = document.getElementById('navCashflow');
         const navCctv = document.getElementById('navCctv');
+        const navAngkutan = document.getElementById('navAngkutan');
         
         const appService = document.getElementById('appService');
         const appCashflow = document.getElementById('appCashflow');
         const appCctv = document.getElementById('appCctv');
+        const appAngkutan = document.getElementById('appAngkutan');
+
+        function clearActiveNav() {
+            navService.classList.remove('active');
+            navCashflow.classList.remove('active');
+            navCctv.classList.remove('active');
+            navAngkutan.classList.remove('active');
+            
+            appService.classList.add('d-none');
+            appCashflow.classList.add('d-none');
+            appCctv.classList.add('d-none');
+            appAngkutan.classList.add('d-none');
+        }
 
         navService.addEventListener('click', () => {
-            navService.classList.add('active'); navCashflow.classList.remove('active'); navCctv.classList.remove('active');
-            appService.classList.remove('d-none'); appCashflow.classList.add('d-none'); appCctv.classList.add('d-none');
+            clearActiveNav();
+            navService.classList.add('active');
+            appService.classList.remove('d-none');
             if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile');
         });
 
         navCashflow.addEventListener('click', () => {
-            navCashflow.classList.add('active'); navService.classList.remove('active'); navCctv.classList.remove('active');
-            appCashflow.classList.remove('d-none'); appService.classList.add('d-none'); appCctv.classList.add('d-none');
+            clearActiveNav();
+            navCashflow.classList.add('active');
+            appCashflow.classList.remove('d-none');
             if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile');
         });
 
         navCctv.addEventListener('click', () => {
-            navCctv.classList.add('active'); navService.classList.remove('active'); navCashflow.classList.remove('active');
-            appCctv.classList.remove('d-none'); appService.classList.add('d-none'); appCashflow.classList.add('d-none');
+            clearActiveNav();
+            navCctv.classList.add('active');
+            appCctv.classList.remove('d-none');
+            if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile');
+        });
+
+        navAngkutan.addEventListener('click', () => {
+            clearActiveNav();
+            navAngkutan.classList.add('active');
+            appAngkutan.classList.remove('d-none');
             if(window.innerWidth <= 768) sidebar.classList.remove('show-mobile');
         });
 
@@ -380,6 +491,8 @@
         let currentKm = 0;
         let serviceData = [];
         let cashflowData = [];
+        let proyekData = [];
+        let angkutanData = [];
         let categories = ["Gaji", "Transportasi", "Makan & Minum", "Internet", "Investasi", "Lainnya"];
         let sources = ["Bank Mandiri", "BJB"]; 
         let isDataInitialized = false;
@@ -475,8 +588,234 @@
                 renderCashflowTable();
                 renderBankBalances();
             });
+
+            // Listener Proyek
+            onSnapshot(collection(db, "proyek"), (snapshot) => {
+                proyekData = [];
+                snapshot.forEach((doc) => proyekData.push({ id: doc.id, ...doc.data() }));
+                renderProyekTable();
+                renderDropdownProyek();
+            });
+
+            // Listener Angkutan
+            onSnapshot(collection(db, "angkutan"), (snapshot) => {
+                angkutanData = [];
+                snapshot.forEach((doc) => angkutanData.push({ id: doc.id, ...doc.data() }));
+                angkutanData.sort((a, b) => a.timestamp - b.timestamp);
+                renderProyekTable(); 
+            });
         }
 
+        // --- MANAJEMEN PROYEK & ANGKUTAN ---
+        document.getElementById('addProyekBtn').addEventListener('click', async () => {
+            const nama = document.getElementById('proyekNama').value.trim();
+            const cargo = document.getElementById('proyekCargo').value.trim();
+            const tonase = Number(document.getElementById('proyekTonase').value);
+            
+            if (!nama || !tonase) return alert('Nama proyek dan tonase wajib diisi!');
+
+            await addDoc(collection(db, "proyek"), { nama, cargo, tonase, timestamp: Date.now() });
+            document.getElementById('proyekNama').value = '';
+            document.getElementById('proyekCargo').value = '';
+            document.getElementById('proyekTonase').value = '';
+        });
+
+        window.deleteProyek = async (id, namaProyek) => { 
+            if (confirm(`Apakah Anda yakin ingin menghapus proyek "${namaProyek}" beserta seluruh data angkutannya?`)) {
+                await deleteDoc(doc(db, "proyek", id));
+                angkutanData.filter(a => a.proyekId === id).forEach(async (item) => {
+                    await deleteDoc(doc(db, "angkutan", item.id));
+                });
+            }
+        };
+
+        window.toggleDetailAngkutan = (proyekId) => {
+            const rowDetail = document.getElementById(`detail-${proyekId}`);
+            if (rowDetail) {
+                rowDetail.classList.toggle('d-none');
+            }
+        };
+
+        function renderProyekTable() {
+            const tbody = document.getElementById('tableBodyProyek');
+            tbody.innerHTML = '';
+            if (proyekData.length === 0) return tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b;">Belum ada data proyek.</td></tr>`;
+            
+            proyekData.forEach((item, index) => {
+                const angkutanProyek = angkutanData.filter(a => a.proyekId === item.id || a.proyek === item.nama);
+                const totalTerpakai = angkutanProyek.reduce((sum, curr) => sum + Number(curr.tonase || 0), 0);
+                const tonaseSisa = Number(item.tonase) - totalTerpakai;
+
+                // Rangkuman per Vendor untuk Proyek ini
+                const vendorSummary = {};
+                angkutanProyek.forEach(ang => {
+                    const v = ang.vendor || 'Tanpa Vendor';
+                    if (!vendorSummary[v]) {
+                        vendorSummary[v] = { trip: 0, pcs: 0, tonase: 0 };
+                    }
+                    vendorSummary[v].trip += 1;
+                    vendorSummary[v].pcs += Number(ang.pcs || 0);
+                    vendorSummary[v].tonase += Number(ang.tonase || 0);
+                });
+
+                const vendorKeys = Object.keys(vendorSummary);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.nama}</strong></td>
+                        <td><span class="badge badge-sumber">${item.cargo || "-"}</span></td>
+                        <td>${item.tonase}</td>
+                        <td class="${tonaseSisa < 0 ? 'text-red' : 'text-green'}">${tonaseSisa}</td>
+                        <td>
+                            <button class="btn-toggle-sub" onclick="window.toggleDetailAngkutan('${item.id}')">Lihat</button>
+                            <button class="btn-excel" onclick="window.downloadProyekReport('${item.id}')">Download</button>
+                            <button class="btn-delete" onclick="window.deleteProyek('${item.id}', '${item.nama}')">Hapus</button>
+                        </td>
+                    </tr>
+                    <tr id="detail-${item.id}" class="d-none">
+                        <td colspan="6" style="background-color: #f8fafc; padding: 1.5rem;">
+                            <!-- Tabel Rangkuman Vendor -->
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e1b4b;">Rangkuman Vendor Angkut</div>
+                            <div class="table-responsive" style="margin-bottom: 1.5rem;">
+                                <table style="background: white; border-radius: 8px; overflow: hidden; min-width: 500px;">
+                                    <thead>
+                                        <tr style="background: #e2e8f0;">
+                                            <th style="padding: 0.75rem;">No</th>
+                                            <th style="padding: 0.75rem;">Nama Vendor</th>
+                                            <th style="padding: 0.75rem;">Jumlah Trip</th>
+                                            <th style="padding: 0.75rem;">Total Pcs</th>
+                                            <th style="padding: 0.75rem;">Total Tonase</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${vendorKeys.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 1rem;">Belum ada vendor yang mengangkut.</td></tr>` :
+                                            vendorKeys.map((v, vIdx) => `
+                                                <tr>
+                                                    <td style="padding: 0.75rem;">${vIdx + 1}</td>
+                                                    <td style="padding: 0.75rem;"><strong>${v}</strong></td>
+                                                    <td style="padding: 0.75rem;">${vendorSummary[v].trip} Trip</td>
+                                                    <td style="padding: 0.75rem;">${vendorSummary[v].pcs}</td>
+                                                    <td style="padding: 0.75rem;">${vendorSummary[v].tonase}</td>
+                                                </tr>
+                                            `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Tabel Detail Angkutan -->
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: #4f46e5;">Daftar Angkutan untuk Proyek: ${item.nama}</div>
+                            <div class="table-responsive">
+                                <table style="background: white; border-radius: 8px; overflow: hidden; min-width: 600px;">
+                                    <thead>
+                                        <tr style="background: #e2e8f0;">
+                                            <th style="padding: 0.75rem;">No</th>
+                                            <th style="padding: 0.75rem;">Tanggal</th>
+                                            <th style="padding: 0.75rem;">Nomor Polisi</th>
+                                            <th style="padding: 0.75rem;">Vendor</th>
+                                            <th style="padding: 0.75rem;">Jumlah Pcs</th>
+                                            <th style="padding: 0.75rem;">Tonase Angkutan</th>
+                                            <th style="padding: 0.75rem;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${angkutanProyek.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 1rem;">Belum ada data angkutan pada proyek ini.</td></tr>` : 
+                                            angkutanProyek.map((ang, idx) => `
+                                                <tr>
+                                                    <td style="padding: 0.75rem;">${idx + 1}</td>
+                                                    <td style="padding: 0.75rem;">${ang.tanggal}</td>
+                                                    <td style="padding: 0.75rem;"><strong>${ang.nopol}</strong></td>
+                                                    <td style="padding: 0.75rem;">${ang.vendor}</td>
+                                                    <td style="padding: 0.75rem;">${ang.pcs || 0}</td>
+                                                    <td style="padding: 0.75rem;">${ang.tonase}</td>
+                                                    <td style="padding: 0.75rem;"><button class="btn-delete" onclick="window.deleteAngkutan('${ang.id}', '${ang.nopol}')">Hapus</button></td>
+                                                </tr>
+                                            `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderDropdownProyek() {
+            const select = document.getElementById('angProyek');
+            const current = select.value;
+            select.innerHTML = '<option value="">- Pilih Kapal -</option>';
+            proyekData.forEach(p => {
+                select.innerHTML += `<option value="${p.id}">${p.nama} (${p.cargo || 'Tanpa Cargo'})</option>`;
+            });
+            if (proyekData.some(p => p.id === current)) select.value = current;
+        }
+
+        document.getElementById('addAngkutanBtn').addEventListener('click', async () => {
+            const tanggal = document.getElementById('angTgl').value;
+            const proyekId = document.getElementById('angProyek').value;
+            const nopol = document.getElementById('angNopol').value.trim();
+            const vendor = document.getElementById('angVendor').value.trim();
+            const pcsAngkutan = Number(document.getElementById('angPcs').value) || 0;
+            const tonaseAngkutan = Number(document.getElementById('angTonase').value);
+
+            if (!tanggal || !proyekId || !nopol || !vendor || !tonaseAngkutan) {
+                return alert('Mohon isi semua kolom angkutan wajib termasuk tonase!');
+            }
+
+            const selectedProyek = proyekData.find(p => p.id === proyekId);
+            if (!selectedProyek) return alert('Proyek tidak valid!');
+
+            await addDoc(collection(db, "angkutan"), {
+                tanggal, 
+                proyekId: selectedProyek.id, 
+                proyek: selectedProyek.nama, 
+                nopol, 
+                vendor, 
+                pcs: pcsAngkutan,
+                tonase: tonaseAngkutan, 
+                timestamp: Date.now()
+            });
+
+            document.getElementById('angTgl').value = '';
+            document.getElementById('angProyek').value = '';
+            document.getElementById('angNopol').value = '';
+            document.getElementById('angVendor').value = '';
+            document.getElementById('angPcs').value = '';
+            document.getElementById('angTonase').value = '';
+        });
+
+        window.deleteAngkutan = async (id, nopol) => { 
+            if (confirm(`Apakah Anda yakin ingin menghapus data angkutan dengan nomor polisi ${nopol}?`)) {
+                await deleteDoc(doc(db, "angkutan", id)); 
+            }
+        };
+
+        // Fungsi Download Laporan Excel per Proyek
+        window.downloadProyekReport = (proyekId) => {
+            const proyek = proyekData.find(p => p.id === proyekId);
+            if (!proyek) return alert('Proyek tidak ditemukan!');
+
+            const angkutanProyek = angkutanData.filter(a => a.proyekId === proyek.id || a.proyek === proyek.nama);
+            if (angkutanProyek.length === 0) return alert('Tidak ada data angkutan untuk proyek ini!');
+
+            const sheetData = angkutanProyek.map((item, index) => ({
+                No: index + 1,
+                Tanggal: item.tanggal,
+                'Nomor Polisi': item.nopol || '-',
+                Vendor: item.vendor || '-',
+                'Jumlah Pcs': Number(item.pcs || 0),
+                'Tonase Angkutan': Number(item.tonase || 0)
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(sheetData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Data Angkutan");
+
+            const safeName = proyek.nama.replace(/[^a-zA-Z0-9]/g, '_');
+            XLSX.writeFile(wb, `Laporan_Proyek_${safeName}.xlsx`);
+        };
+
+        // --- SERVICE & CASHFLOW LOGIC ---
         document.getElementById('updateKmBtn').addEventListener('click', async () => {
             const inputVal = document.getElementById('kmInput').value;
             if (inputVal === '' || Number(inputVal) < 0) return alert('Masukkan KM valid!');
@@ -498,7 +837,11 @@
             ['tglBeli','namaParts','kmGanti','kmKembali','hargaParts'].forEach(id => document.getElementById(id).value = '');
         });
 
-        window.deleteService = async (id) => { if (confirm('Hapus data ini?')) await deleteDoc(doc(db, "services", id)); };
+        window.deleteService = async (id, namaParts) => { 
+            if (confirm(`Apakah Anda yakin ingin menghapus data servis "${namaParts}"?`)) {
+                await deleteDoc(doc(db, "services", id)); 
+            }
+        };
 
         function renderServiceTable() {
             const tbody = document.getElementById('tableBody');
@@ -511,7 +854,7 @@
                     <td>${index + 1}</td><td>${item.tglBeli}</td><td><strong>${item.namaParts}</strong></td>
                     <td>${item.kmGanti.toLocaleString('id-ID')} KM</td><td>${item.kmKembali.toLocaleString('id-ID')} KM</td>
                     <td>${formatRupiah(item.harga)}</td><td>${badgeHtml}</td>
-                    <td><button class="btn-delete" onclick="window.deleteService('${item.id}')">Hapus</button></td>
+                    <td><button class="btn-delete" onclick="window.deleteService('${item.id}', '${item.namaParts}')">Hapus</button></td>
                 </tr>`;
             });
         }
@@ -584,7 +927,11 @@
             ['cfTanggal','cfKeterangan','cfNominal'].forEach(id => document.getElementById(id).value = '');
         });
 
-        window.deleteCashflow = async (id) => { if (confirm('Hapus data cashflow?')) await deleteDoc(doc(db, "cashflow", id)); };
+        window.deleteCashflow = async (id, keterangan) => { 
+            if (confirm(`Apakah Anda yakin ingin menghapus data cashflow "${keterangan}"?`)) {
+                await deleteDoc(doc(db, "cashflow", id)); 
+            }
+        };
 
         function renderCashflowTable() {
             const tbody = document.getElementById('tableBodyCf');
@@ -599,7 +946,7 @@
                     <td><span class="badge badge-kategori">${item.kategori || "-"}</span></td>
                     <td><span class="badge badge-sumber">${item.sumber || "-"}</span></td>
                     <td><strong>${item.keterangan}</strong></td><td class="${colorClass}">${formatRupiah(item.nominal)}</td>
-                    <td><button class="btn-delete" onclick="window.deleteCashflow('${item.id}')">Hapus</button></td>
+                    <td><button class="btn-delete" onclick="window.deleteCashflow('${item.id}', '${item.keterangan}')">Hapus</button></td>
                 </tr>`;
             });
         }
