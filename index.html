@@ -65,8 +65,10 @@
         .form-control:focus { border-color: #4f46e5; }
         .btn-submit { background-color: #4f46e5; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; height: 43px; }
         .btn-delete { background-color: #ef4444; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-        .btn-toggle-sub { background-color: #0284c7; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .btn-edit { background-color: #f59e0b; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
         .btn-excel { background-color: #16a34a; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .btn-input-row { background-color: #4f46e5; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .card { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
         .card-title { font-size: 0.9rem; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem; }
@@ -292,23 +294,7 @@
                     </div>
                 </section>
 
-                <!-- 2. Form Input Angkutan -->
-                <section class="input-section">
-                    <div class="form-group">
-                        <label style="margin-bottom: 1rem; display: block; font-size: 1.05rem;">Input Data Angkutan</label>
-                        <div class="form-grid">
-                            <div><label>Tanggal</label><input type="date" id="angTgl" class="form-control"></div>
-                            <div><label>Pilih Kapal</label><select id="angProyek" class="form-control"><option value="">- Pilih Kapal -</option></select></div>
-                            <div><label>Nomor Polisi</label><input type="text" id="angNopol" class="form-control" placeholder="Contoh: B 1234 XYZ"></div>
-                            <div><label>Vendor</label><input type="text" id="angVendor" class="form-control" placeholder="Contoh: PT Maju Jaya"></div>
-                            <div><label>Jumlah Pcs</label><input type="number" id="angPcs" class="form-control" placeholder="Contoh: 50"></div>
-                            <div><label>Tonase Angkutan</label><input type="number" id="angTonase" class="form-control" placeholder="Contoh: 10"></div>
-                            <button class="btn-submit" id="addAngkutanBtn">Tambah Angkutan</button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Tabel Data Proyek -->
+                <!-- Tabel Data Proyek & Tombol Input di Kolom Aksi -->
                 <section class="table-section">
                     <div class="table-header-wrapper">
                         <h2 class="section-title">Daftar Kapal & Data Angkutan</h2>
@@ -339,7 +325,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCMF8fMBmpccPvEw15fhaJmsDSN7KrXQos",
@@ -594,7 +580,6 @@
                 proyekData = [];
                 snapshot.forEach((doc) => proyekData.push({ id: doc.id, ...doc.data() }));
                 renderProyekTable();
-                renderDropdownProyek();
             });
 
             // Listener Angkutan
@@ -626,13 +611,6 @@
                 angkutanData.filter(a => a.proyekId === id).forEach(async (item) => {
                     await deleteDoc(doc(db, "angkutan", item.id));
                 });
-            }
-        };
-
-        window.toggleDetailAngkutan = (proyekId) => {
-            const rowDetail = document.getElementById(`detail-${proyekId}`);
-            if (rowDetail) {
-                rowDetail.classList.toggle('d-none');
             }
         };
 
@@ -668,13 +646,31 @@
                         <td>${item.tonase}</td>
                         <td class="${tonaseSisa < 0 ? 'text-red' : 'text-green'}">${tonaseSisa}</td>
                         <td>
-                            <button class="btn-toggle-sub" onclick="window.toggleDetailAngkutan('${item.id}')">Lihat</button>
+                            <button class="btn-input-row" onclick="window.toggleInputAngkutan('${item.id}')"> + </button>
                             <button class="btn-excel" onclick="window.downloadProyekReport('${item.id}')">Download</button>
                             <button class="btn-delete" onclick="window.deleteProyek('${item.id}', '${item.nama}')">Hapus</button>
                         </td>
                     </tr>
                     <tr id="detail-${item.id}" class="d-none">
                         <td colspan="6" style="background-color: #f8fafc; padding: 1.5rem;">
+                            
+                            <!-- Form Input / Edit Angkutan Khusus Kapal Ini -->
+                            <div id="form-input-${item.id}" class="d-none" style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #cbd5e1;">
+                                <div id="form-title-${item.id}" style="font-weight: 600; margin-bottom: 1rem; color: #4f46e5;">Input Data Angkutan untuk: ${item.nama}</div>
+                                <input type="hidden" id="editAngkutanId-${item.id}" value="">
+                                <div class="form-grid">
+                                    <div><label>Tanggal</label><input type="date" id="angTgl-${item.id}" class="form-control"></div>
+                                    <div><label>Nomor Polisi</label><input type="text" id="angNopol-${item.id}" class="form-control" placeholder="B 1234 XYZ"></div>
+                                    <div><label>Vendor</label><input type="text" id="angVendor-${item.id}" class="form-control" placeholder="PT Maju Jaya"></div>
+                                    <div><label>Jumlah Pcs</label><input type="number" id="angPcs-${item.id}" class="form-control" placeholder="50"></div>
+                                    <div><label>Tonase Angkutan</label><input type="number" id="angTonase-${item.id}" class="form-control" placeholder="10"></div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button class="btn-submit" onclick="window.submitAngkutan('${item.id}')">Simpan</button>
+                                        <button class="btn-delete" onclick="window.cancelEditAngkutan('${item.id}')" id="btnCancelEdit-${item.id}" style="display:none;">Batal</button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Tabel Rangkuman Vendor -->
                             <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e1b4b;">Rangkuman Vendor Angkut</div>
                             <div class="table-responsive" style="margin-bottom: 1.5rem;">
@@ -728,7 +724,10 @@
                                                     <td style="padding: 0.75rem;">${ang.vendor}</td>
                                                     <td style="padding: 0.75rem;">${ang.pcs || 0}</td>
                                                     <td style="padding: 0.75rem;">${ang.tonase}</td>
-                                                    <td style="padding: 0.75rem;"><button class="btn-delete" onclick="window.deleteAngkutan('${ang.id}', '${ang.nopol}')">Hapus</button></td>
+                                                    <td style="padding: 0.75rem; display: flex; gap: 0.4rem;">
+                                                        <button class="btn-edit" onclick="window.editAngkutan('${item.id}', '${ang.id}', '${ang.tanggal}', '${ang.nopol}', '${ang.vendor}', '${ang.pcs || 0}', '${ang.tonase}')">Edit</button>
+                                                        <button class="btn-delete" onclick="window.deleteAngkutan('${ang.id}', '${ang.nopol}')">Hapus</button>
+                                                    </td>
                                                 </tr>
                                             `).join('')}
                                     </tbody>
@@ -740,49 +739,98 @@
             });
         }
 
-        function renderDropdownProyek() {
-            const select = document.getElementById('angProyek');
-            const current = select.value;
-            select.innerHTML = '<option value="">- Pilih Kapal -</option>';
-            proyekData.forEach(p => {
-                select.innerHTML += `<option value="${p.id}">${p.nama} (${p.cargo || 'Tanpa Cargo'})</option>`;
-            });
-            if (proyekData.some(p => p.id === current)) select.value = current;
-        }
+        window.toggleInputAngkutan = (proyekId) => {
+            const formDiv = document.getElementById(`form-input-${proyekId}`);
+            const rowDetail = document.getElementById(`detail-${proyekId}`);
+            if (formDiv && rowDetail) {
+                rowDetail.classList.remove('d-none');
+                formDiv.classList.toggle('d-none');
+                
+                // Reset form ke mode input baru jika sedang dibuka
+                if(!formDiv.classList.contains('d-none')) {
+                    document.getElementById(`editAngkutanId-${proyekId}`).value = '';
+                    document.getElementById(`form-title-${proyekId}`).textContent = `Input Data Angkutan untuk Proyek`;
+                    document.getElementById(`angTgl-${proyekId}`).value = '';
+                    document.getElementById(`angNopol-${proyekId}`).value = '';
+                    document.getElementById(`angVendor-${proyekId}`).value = '';
+                    document.getElementById(`angPcs-${proyekId}`).value = '';
+                    document.getElementById(`angTonase-${proyekId}`).value = '';
+                    document.getElementById(`btnCancelEdit-${proyekId}`).style.display = 'none';
+                }
+            }
+        };
 
-        document.getElementById('addAngkutanBtn').addEventListener('click', async () => {
-            const tanggal = document.getElementById('angTgl').value;
-            const proyekId = document.getElementById('angProyek').value;
-            const nopol = document.getElementById('angNopol').value.trim();
-            const vendor = document.getElementById('angVendor').value.trim();
-            const pcsAngkutan = Number(document.getElementById('angPcs').value) || 0;
-            const tonaseAngkutan = Number(document.getElementById('angTonase').value);
+        window.editAngkutan = (proyekId, angId, tanggal, nopol, vendor, pcs, tonase) => {
+            const rowDetail = document.getElementById(`detail-${proyekId}`);
+            const formDiv = document.getElementById(`form-input-${proyekId}`);
+            
+            rowDetail.classList.remove('d-none');
+            formDiv.classList.remove('d-none');
 
-            if (!tanggal || !proyekId || !nopol || !vendor || !tonaseAngkutan) {
+            document.getElementById(`editAngkutanId-${proyekId}`).value = angId;
+            document.getElementById(`form-title-${proyekId}`).textContent = `Edit Data Angkutan (${nopol})`;
+            document.getElementById(`angTgl-${proyekId}`).value = tanggal;
+            document.getElementById(`angNopol-${proyekId}`).value = nopol;
+            document.getElementById(`angVendor-${proyekId}`).value = vendor;
+            document.getElementById(`angPcs-${proyekId}`).value = pcs;
+            document.getElementById(`angTonase-${proyekId}`).value = tonase;
+            document.getElementById(`btnCancelEdit-${proyekId}`).style.display = 'inline-block';
+            
+            formDiv.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.cancelEditAngkutan = (proyekId) => {
+            document.getElementById(`editAngkutanId-${proyekId}`).value = '';
+            document.getElementById(`form-title-${proyekId}`).textContent = `Input Data Angkutan untuk Proyek`;
+            document.getElementById(`angTgl-${proyekId}`).value = '';
+            document.getElementById(`angNopol-${proyekId}`).value = '';
+            document.getElementById(`angVendor-${proyekId}`).value = '';
+            document.getElementById(`angPcs-${proyekId}`).value = '';
+            document.getElementById(`angTonase-${proyekId}`).value = '';
+            document.getElementById(`btnCancelEdit-${proyekId}`).style.display = 'none';
+            document.getElementById(`form-input-${proyekId}`).classList.add('d-none');
+        };
+
+        window.submitAngkutan = async (proyekId) => {
+            const editId = document.getElementById(`editAngkutanId-${proyekId}`).value;
+            const tanggal = document.getElementById(`angTgl-${proyekId}`).value;
+            const nopol = document.getElementById(`angNopol-${proyekId}`).value.trim();
+            const vendor = document.getElementById(`angVendor-${proyekId}`).value.trim();
+            const pcsAngkutan = Number(document.getElementById(`angPcs-${proyekId}`).value) || 0;
+            const tonaseAngkutan = Number(document.getElementById(`angTonase-${proyekId}`).value);
+
+            if (!tanggal || !nopol || !vendor || !tonaseAngkutan) {
                 return alert('Mohon isi semua kolom angkutan wajib termasuk tonase!');
             }
 
             const selectedProyek = proyekData.find(p => p.id === proyekId);
             if (!selectedProyek) return alert('Proyek tidak valid!');
 
-            await addDoc(collection(db, "angkutan"), {
-                tanggal, 
-                proyekId: selectedProyek.id, 
-                proyek: selectedProyek.nama, 
-                nopol, 
-                vendor, 
-                pcs: pcsAngkutan,
-                tonase: tonaseAngkutan, 
-                timestamp: Date.now()
-            });
+            if (editId) {
+                // Update Data Eksisting
+                await updateDoc(doc(db, "angkutan", editId), {
+                    tanggal,
+                    nopol,
+                    vendor,
+                    pcs: pcsAngkutan,
+                    tonase: tonaseAngkutan
+                });
+            } else {
+                // Tambah Data Baru
+                await addDoc(collection(db, "angkutan"), {
+                    tanggal, 
+                    proyekId: selectedProyek.id, 
+                    proyek: selectedProyek.nama, 
+                    nopol, 
+                    vendor, 
+                    pcs: pcsAngkutan,
+                    tonase: tonaseAngkutan, 
+                    timestamp: Date.now()
+                });
+            }
 
-            document.getElementById('angTgl').value = '';
-            document.getElementById('angProyek').value = '';
-            document.getElementById('angNopol').value = '';
-            document.getElementById('angVendor').value = '';
-            document.getElementById('angPcs').value = '';
-            document.getElementById('angTonase').value = '';
-        });
+            window.cancelEditAngkutan(proyekId);
+        };
 
         window.deleteAngkutan = async (id, nopol) => { 
             if (confirm(`Apakah Anda yakin ingin menghapus data angkutan dengan nomor polisi ${nopol}?`)) {
