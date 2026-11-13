@@ -67,7 +67,7 @@
         .btn-delete { background-color: #ef4444; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
         .btn-edit { background-color: #f59e0b; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
         .btn-excel { background-color: #16a34a; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-        .btn-input-row { background-color: #4f46e5; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        .btn-lihat { background-color: #0284c7; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
         
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .card { background-color: #ffffff; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
@@ -288,13 +288,13 @@
                         <div class="form-grid">
                             <div><label>Nama Kapal</label><input type="text" id="proyekNama" class="form-control" placeholder="Contoh: MV. MASK"></div>
                             <div><label>Jenis Cargo</label><input type="text" id="proyekCargo" class="form-control" placeholder="Contoh: Batubara"></div>
-                            <div><label>Tonase (Total)</label><input type="number" id="proyekTonase" class="form-control" placeholder="Contoh: 50"></div>
+                            <div><label>Tonase (Total)</label><input type="number" step="any" id="proyekTonase" class="form-control" placeholder="Contoh: 50"></div>
                             <button class="btn-submit" id="addProyekBtn">Simpan Proyek</button>
                         </div>
                     </div>
                 </section>
 
-                <!-- Tabel Data Proyek & Tombol Input di Kolom Aksi -->
+                <!-- Tabel Data Proyek & Tombol Lihat di Kolom Aksi -->
                 <section class="table-section">
                     <div class="table-header-wrapper">
                         <h2 class="section-title">Daftar Kapal & Data Angkutan</h2>
@@ -615,13 +615,12 @@
         };
 
         function renderProyekTable() {
-            // Simpan status form/detail yang sedang terbuka sebelum render ulang
-            const openForms = {};
+            const formatTonase = (num) => Number(Number(num || 0).toFixed(3));
+
+            // Simpan status detail yang sedang terbuka sebelum render ulang
             const openDetails = {};
             proyekData.forEach(item => {
-                const f = document.getElementById(`form-input-${item.id}`);
                 const d = document.getElementById(`detail-${item.id}`);
-                if (f && !f.classList.contains('d-none')) openForms[item.id] = true;
                 if (d && !d.classList.contains('d-none')) openDetails[item.id] = true;
             });
 
@@ -632,7 +631,7 @@
             proyekData.forEach((item, index) => {
                 const angkutanProyek = angkutanData.filter(a => a.proyekId === item.id || a.proyek === item.nama);
                 const totalTerpakai = angkutanProyek.reduce((sum, curr) => sum + Number(curr.tonase || 0), 0);
-                const tonaseSisa = Number(item.tonase) - totalTerpakai;
+                const tonaseSisa = formatTonase(Number(item.tonase) - totalTerpakai);
 
                 // Rangkuman per Vendor untuk Proyek ini
                 const vendorSummary = {};
@@ -653,10 +652,10 @@
                         <td>${index + 1}</td>
                         <td><strong>${item.nama}</strong></td>
                         <td><span class="badge badge-sumber">${item.cargo || "-"}</span></td>
-                        <td>${item.tonase}</td>
+                        <td>${formatTonase(item.tonase)}</td>
                         <td class="${tonaseSisa < 0 ? 'text-red' : 'text-green'}">${tonaseSisa}</td>
                         <td>
-                            <button class="btn-input-row" onclick="window.toggleInputAngkutan('${item.id}')"> + </button>
+                            <button class="btn-lihat" onclick="window.toggleDetailProyek('${item.id}')" id="btnLihat-${item.id}">${openDetails[item.id] ? 'Sembunyikan' : 'Lihat'}</button>
                             <button class="btn-excel" onclick="window.downloadProyekReport('${item.id}')">Download</button>
                             <button class="btn-delete" onclick="window.deleteProyek('${item.id}', '${item.nama}')">Hapus</button>
                         </td>
@@ -664,8 +663,13 @@
                     <tr id="detail-${item.id}" class="${openDetails[item.id] ? '' : 'd-none'}">
                         <td colspan="6" style="background-color: #f8fafc; padding: 1.5rem;">
                             
-                            <!-- Form Input / Edit Angkutan Khusus Kapal Ini -->
-                            <div id="form-input-${item.id}" class="${openForms[item.id] ? '' : 'd-none'}" style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #cbd5e1;">
+                            <!-- Tombol untuk memunculkan/menyembunyikan form input angkutan di dalam detail -->
+                            <div style="margin-bottom: 1.5rem; display: flex; justify-content: flex-start;">
+                                <button class="btn-submit" onclick="window.toggleInputForm('${item.id}')" id="btnToggleForm-${item.id}">+ Input Angkutan</button>
+                            </div>
+
+                            <!-- Form Input / Edit Angkutan Khusus Kapal Ini (Default Tersembunyi) -->
+                            <div id="form-input-${item.id}" class="d-none" style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #cbd5e1;">
                                 <div id="form-title-${item.id}" style="font-weight: 600; margin-bottom: 1rem; color: #4f46e5;">Input Data Angkutan untuk: ${item.nama}</div>
                                 <input type="hidden" id="editAngkutanId-${item.id}" value="">
                                 <div class="form-grid">
@@ -674,7 +678,7 @@
                                     <div><label>Nomor Polisi</label><input type="text" id="angNopol-${item.id}" class="form-control" placeholder="B 1234 XYZ"></div>
                                     <div><label>Vendor</label><input type="text" id="angVendor-${item.id}" class="form-control" placeholder="PT Maju Jaya"></div>
                                     <div><label>Jumlah Pcs</label><input type="number" id="angPcs-${item.id}" class="form-control" placeholder="50"></div>
-                                    <div><label>Tonase Angkutan</label><input type="number" id="angTonase-${item.id}" class="form-control" placeholder="10"></div>
+                                    <div><label>Tonase Angkutan</label><input type="number" step="any" id="angTonase-${item.id}" class="form-control" placeholder="10"></div>
                                     <div style="display: flex; gap: 0.5rem;">
                                         <button class="btn-submit" onclick="window.submitAngkutan('${item.id}')">Simpan</button>
                                         <button class="btn-delete" onclick="window.cancelEditAngkutan('${item.id}')" id="btnCancelEdit-${item.id}" style="display:none;">Batal</button>
@@ -703,7 +707,7 @@
                                                     <td style="padding: 0.75rem;"><strong>${v}</strong></td>
                                                     <td style="padding: 0.75rem;">${vendorSummary[v].trip} Trip</td>
                                                     <td style="padding: 0.75rem;">${vendorSummary[v].pcs}</td>
-                                                    <td style="padding: 0.75rem;">${vendorSummary[v].tonase}</td>
+                                                    <td style="padding: 0.75rem;">${formatTonase(vendorSummary[v].tonase)}</td>
                                                 </tr>
                                             `).join('')}
                                     </tbody>
@@ -736,7 +740,7 @@
                                                     <td style="padding: 0.75rem;"><strong>${ang.nopol}</strong></td>
                                                     <td style="padding: 0.75rem;">${ang.vendor}</td>
                                                     <td style="padding: 0.75rem;">${ang.pcs || 0}</td>
-                                                    <td style="padding: 0.75rem;">${ang.tonase}</td>
+                                                    <td style="padding: 0.75rem;">${formatTonase(ang.tonase)}</td>
                                                     <td style="padding: 0.75rem; display: flex; gap: 0.4rem;">
                                                         <button class="btn-edit" onclick="window.editAngkutan('${item.id}', '${ang.id}', '${ang.tanggal}', '${ang.nosj || ''}', '${ang.nopol}', '${ang.vendor}', '${ang.pcs || 0}', '${ang.tonase}')">Edit</button>
                                                         <button class="btn-delete" onclick="window.deleteAngkutan('${ang.id}', '${ang.nopol}')">Hapus</button>
@@ -752,14 +756,19 @@
             });
         }
 
-        window.toggleInputAngkutan = (proyekId) => {
-            const formDiv = document.getElementById(`form-input-${proyekId}`);
+        window.toggleDetailProyek = (proyekId) => {
             const rowDetail = document.getElementById(`detail-${proyekId}`);
-            if (formDiv && rowDetail) {
-                rowDetail.classList.remove('d-none');
+            const btnLihat = document.getElementById(`btnLihat-${proyekId}`);
+            if (rowDetail && btnLihat) {
+                rowDetail.classList.toggle('d-none');
+                btnLihat.textContent = rowDetail.classList.contains('d-none') ? 'Lihat' : 'Sembunyikan';
+            }
+        };
+
+        window.toggleInputForm = (proyekId) => {
+            const formDiv = document.getElementById(`form-input-${proyekId}`);
+            if (formDiv) {
                 formDiv.classList.toggle('d-none');
-                
-                // Jika form baru dibuka lewat tombol '+ Input Angkutan', pastikan mode-nya reset ke tambah baru
                 if(!formDiv.classList.contains('d-none')) {
                     const editIdField = document.getElementById(`editAngkutanId-${proyekId}`);
                     if (!editIdField.value) {
@@ -782,6 +791,7 @@
             
             rowDetail.classList.remove('d-none');
             formDiv.classList.remove('d-none');
+            document.getElementById(`btnLihat-${proyekId}`).textContent = 'Sembunyikan';
 
             document.getElementById(`editAngkutanId-${proyekId}`).value = angId;
             document.getElementById(`form-title-${proyekId}`).textContent = `Edit Data Angkutan (${nopol})`;
