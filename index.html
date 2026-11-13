@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DATA CENTER MUHAEMIN</title>
-    <!-- Library Excel -->
+    <!-- Library Excel & PDF -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f7fe; color: #1e293b; height: 100vh; overflow: hidden; display: flex; }
@@ -617,11 +619,13 @@
         function renderProyekTable() {
             const formatTonase = (num) => Number(Number(num || 0).toFixed(3));
 
-            // Simpan status detail yang sedang terbuka sebelum render ulang
             const openDetails = {};
+            const searchValues = {};
             proyekData.forEach(item => {
                 const d = document.getElementById(`detail-${item.id}`);
                 if (d && !d.classList.contains('d-none')) openDetails[item.id] = true;
+                const sInput = document.getElementById(`searchAngkutan-${item.id}`);
+                if (sInput) searchValues[item.id] = sInput.value;
             });
 
             const tbody = document.getElementById('tableBodyProyek');
@@ -646,6 +650,7 @@
                 });
 
                 const vendorKeys = Object.keys(vendorSummary);
+                const activeSearchVal = searchValues[item.id] || '';
 
                 tbody.innerHTML += `
                     <tr>
@@ -686,10 +691,10 @@
                                 </div>
                             </div>
 
-                            <!-- Tabel Rangkuman Vendor -->
+                            <!-- Tabel Rangkuman Vendor (Dengan Kolom Aksi untuk Download Berita Acara PDF & Excel) -->
                             <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e1b4b;">Rangkuman Vendor Angkut</div>
                             <div class="table-responsive" style="margin-bottom: 1.5rem;">
-                                <table style="background: white; border-radius: 8px; overflow: hidden; min-width: 500px;">
+                                <table style="background: white; border-radius: 8px; overflow: hidden; min-width: 600px;">
                                     <thead>
                                         <tr style="background: #e2e8f0;">
                                             <th style="padding: 0.75rem;">No</th>
@@ -697,10 +702,11 @@
                                             <th style="padding: 0.75rem;">Jumlah Trip</th>
                                             <th style="padding: 0.75rem;">Total Pcs</th>
                                             <th style="padding: 0.75rem;">Total Tonase</th>
+                                            <th style="padding: 0.75rem;">Aksi Berita Acara (BA)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${vendorKeys.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 1rem;">Belum ada vendor yang mengangkut.</td></tr>` :
+                                        ${vendorKeys.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 1rem;">Belum ada vendor yang mengangkut.</td></tr>` :
                                             vendorKeys.map((v, vIdx) => `
                                                 <tr>
                                                     <td style="padding: 0.75rem;">${vIdx + 1}</td>
@@ -708,14 +714,24 @@
                                                     <td style="padding: 0.75rem;">${vendorSummary[v].trip} Trip</td>
                                                     <td style="padding: 0.75rem;">${vendorSummary[v].pcs}</td>
                                                     <td style="padding: 0.75rem;">${formatTonase(vendorSummary[v].tonase)}</td>
+                                                    <td style="padding: 0.75rem; display: flex; gap: 0.4rem;">
+                                                        <button class="btn-lihat" onclick="window.downloadBA('${item.id}', '${v}', 'pdf')" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">PDF BA</button>
+                                                        <button class="btn-excel" onclick="window.downloadBA('${item.id}', '${v}', 'excel')" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">Excel BA</button>
+                                                    </td>
                                                 </tr>
                                             `).join('')}
                                     </tbody>
                                 </table>
                             </div>
 
-                            <!-- Tabel Detail Angkutan -->
-                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: #4f46e5;">Daftar Angkutan untuk Proyek: ${item.nama}</div>
+                            <!-- Judul & Kolom Pencarian di bawahnya untuk Daftar Angkutan untuk Kapal -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 1rem;">
+                                <div style="font-weight: 600; color: #4f46e5;">Daftar Angkutan untuk Kapal: ${item.nama}</div>
+                                <div style="width: 280px;">
+                                    <input type="text" id="searchAngkutan-${item.id}" class="form-control" placeholder="Cari No. SJ / Nopol / Vendor..." style="padding: 0.5rem 0.75rem; font-size: 0.85rem;" value="${activeSearchVal}" oninput="window.filterAngkutanTable('${item.id}')">
+                                </div>
+                            </div>
+                            
                             <div class="table-responsive">
                                 <table style="background: white; border-radius: 8px; overflow: hidden; min-width: 600px;">
                                     <thead>
@@ -730,8 +746,8 @@
                                             <th style="padding: 0.75rem;">Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        ${angkutanProyek.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 1rem;">Belum ada data angkutan pada proyek ini.</td></tr>` : 
+                                    <tbody id="tbody-angkutan-${item.id}">
+                                        ${angkutanProyek.length === 0 ? `<tr class="empty-row"><td colspan="8" style="text-align: center; color: #64748b; padding: 1rem;">Belum ada data angkutan pada proyek ini.</td></tr>` : 
                                             angkutanProyek.map((ang, idx) => `
                                                 <tr>
                                                     <td style="padding: 0.75rem;">${idx + 1}</td>
@@ -753,8 +769,171 @@
                         </td>
                     </tr>
                 `;
+
+                if (activeSearchVal) {
+                    setTimeout(() => window.filterAngkutanTable(item.id), 0);
+                }
             });
         }
+
+        window.filterAngkutanTable = (proyekId) => {
+            const input = document.getElementById(`searchAngkutan-${proyekId}`);
+            if (!input) return;
+            const filter = input.value.toLowerCase();
+            const tbody = document.getElementById(`tbody-angkutan-${proyekId}`);
+            if (!tbody) return;
+            const trs = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < trs.length; i++) {
+                const tr = trs[i];
+                if (tr.classList.contains('empty-row')) continue;
+                const text = tr.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    tr.style.display = '';
+                } else {
+                    tr.style.display = 'none';
+                }
+            }
+        };
+
+        // Fungsi Download Berita Acara (BA) Vendor dengan Total Trip/Pcs/Tonase di bawah list & Tanda Tangan Kiri
+        window.downloadBA = (proyekId, vendorName, format) => {
+            const proyek = proyekData.find(p => p.id === proyekId);
+            if (!proyek) return alert('Proyek tidak ditemukan!');
+
+            const angkutanVendor = angkutanData.filter(a => (a.proyekId === proyek.id || a.proyek === proyek.nama) && (a.vendor || 'Tanpa Vendor') === vendorName);
+            if (angkutanVendor.length === 0) return alert('Tidak ada data angkutan untuk vendor ini!');
+
+            const totalPcs = angkutanVendor.reduce((sum, curr) => sum + Number(curr.pcs || 0), 0);
+            const totalTonase = angkutanVendor.reduce((sum, curr) => sum + Number(curr.tonase || 0), 0);
+
+            if (format === 'excel') {
+                const wsData = [
+                    ["BERITA ACARA / REKAPITULASI ANGKUTAN VENDOR"],
+                    ["PT KRAKATAU BANDAR SAMUDERA"],
+                    [],
+                    ["Nama Kapal:", proyek.nama],
+                    ["Jenis Cargo:", proyek.cargo || "-"],
+                    ["Nama Vendor:", vendorName],
+                    ["Tanggal Cetak:", new Date().toLocaleDateString('id-ID')],
+                    [],
+                    ["RINGKASAN"],
+                    ["Indikator", "Total"],
+                    ["Total Trip", angkutanVendor.length],
+                    ["Total Pcs", totalPcs],
+                    ["Total Tonase", Number(totalTonase.toFixed(3))],
+                    [],
+                    ["DAFTAR RINCIAN ANGKUTAN"],
+                    ["No", "Tanggal", "No. SJ", "Nomor Polisi", "Vendor", "Jumlah Pcs", "Tonase Angkutan"]
+                ];
+
+                angkutanVendor.forEach((item, idx) => {
+                    wsData.push([
+                        idx + 1,
+                        item.tanggal,
+                        item.nosj || '-',
+                        item.nopol || '-',
+                        item.vendor || '-',
+                        Number(item.pcs || 0),
+                        Number(item.tonase || 0)
+                    ]);
+                });
+
+                wsData.push([]);
+                wsData.push(["", "", "", "", "Total Trip:", angkutanVendor.length]);
+                wsData.push(["", "", "", "", "Total Pcs:", totalPcs]);
+                wsData.push(["", "", "", "", "Total Tonase:", Number(totalTonase.toFixed(3))]);
+                wsData.push([]);
+                wsData.push(["PT KRAKATAU BANDAR SAMUDERA"]);
+                wsData.push(["Dibuat / Disetujui Oleh,"]);
+                wsData.push([]);
+                wsData.push([]);
+                wsData.push(["( ........................................ )"]);
+
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Berita Acara Vendor");
+                const safeVendor = vendorName.replace(/[^a-zA-Z0-9]/g, '_');
+                const safeProyek = proyek.nama.replace(/[^a-zA-Z0-9]/g, '_');
+                XLSX.writeFile(wb, `Berita_Acara_${safeProyek}_${safeVendor}.xlsx`);
+
+            } else if (format === 'pdf') {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Halaman Pertama: Ringkasan Berbentuk Tabel
+                doc.setFontSize(16);
+                doc.text("BERITA ACARA / REKAPITULASI ANGKUTAN", 14, 20);
+                
+                doc.setFontSize(11);
+                doc.text("PT KRAKATAU BANDAR SAMUDERA", 14, 28);
+                
+                doc.setFontSize(10);
+                doc.text(`Nama Kapal    : ${proyek.nama}`, 14, 38);
+                doc.text(`Jenis Cargo   : ${proyek.cargo || "-"}`, 14, 44);
+                doc.text(`Nama Vendor   : ${vendorName}`, 14, 50);
+                doc.text(`Tanggal Cetak : ${new Date().toLocaleDateString('id-ID')}`, 14, 56);
+
+                doc.setFontSize(12);
+                doc.text("RINGKASAN REKAPITULASI", 14, 68);
+
+                doc.autoTable({
+                    startY: 74,
+                    head: [['Indikator Ringkasan', 'Nilai Total']],
+                    body: [
+                        ['Total Trip', `${angkutanVendor.length} Trip`],
+                        ['Total Pcs', `${totalPcs} Pcs`],
+                        ['Total Tonase', `${totalTonase.toFixed(3)} Ton`]
+                    ],
+                    theme: 'grid',
+                    headStyles: { fillColor: [79, 70, 229] },
+                    margin: { left: 14, right: 100 }
+                });
+
+                // Tambahkan Halaman Kedua untuk Daftar Rincian Angkutan, Total di bawah list, & Tanda Tangan Kiri
+                doc.addPage();
+
+                doc.setFontSize(14);
+                doc.text("DAFTAR RINCIAN ANGKUTAN", 14, 20);
+                doc.setFontSize(10);
+                doc.text(`Kapal: ${proyek.nama} | Vendor: ${vendorName}`, 14, 26);
+
+                const tableRows = angkutanVendor.map((item, idx) => [
+                    idx + 1,
+                    item.tanggal,
+                    item.nosj || '-',
+                    item.nopol || '-',
+                    item.vendor || '-',
+                    item.pcs || 0,
+                    Number(item.tonase || 0).toFixed(3)
+                ]);
+
+                doc.autoTable({
+                    startY: 32,
+                    head: [['No', 'Tanggal', 'No. SJ', 'No. Polisi', 'Vendor', 'Pcs', 'Tonase']],
+                    body: tableRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [79, 70, 229] }
+                });
+
+                // Total Trip, Total Pcs, dan Total Tonase ditampilkan di bawah list rekapitulasi angkutan
+                const finalY = doc.lastAutoTable.finalY + 10;
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "bold");
+                doc.text(`Total Trip     : ${angkutanVendor.length} Trip`, 14, finalY);
+                doc.text(`Total Pcs      : ${totalPcs} Pcs`, 14, finalY + 6);
+                doc.text(`Total Tonase : ${totalTonase.toFixed(3)} Ton`, 14, finalY + 12);
+
+                // Tanda Tangan di sebelah kiri bawah di bawah total rekapitulasi
+                doc.setFont("helvetica", "normal");
+                doc.text("PT KRAKATAU BANDAR SAMUDERA", 14, finalY + 26);
+                doc.text("Dibuat / Disetujui Oleh,", 14, finalY + 32);
+                doc.text("( .................................................... )", 14, finalY + 62);
+
+                const safeVendor = vendorName.replace(/[^a-zA-Z0-9]/g, '_');
+                const safeProyek = proyek.nama.replace(/[^a-zA-Z0-9]/g, '_');
+                doc.save(`Berita_Acara_${safeProyek}_${safeVendor}.pdf`);
+            }
+        };
 
         window.toggleDetailProyek = (proyekId) => {
             const rowDetail = document.getElementById(`detail-${proyekId}`);
@@ -836,7 +1015,6 @@
             if (!selectedProyek) return alert('Proyek tidak valid!');
 
             if (editId) {
-                // Update Data Eksisting (tanpa alert)
                 await updateDoc(doc(db, "angkutan", editId), {
                     tanggal,
                     nosj,
@@ -846,7 +1024,6 @@
                     tonase: tonaseAngkutan
                 });
             } else {
-                // Tambah Data Baru (tanpa alert)
                 await addDoc(collection(db, "angkutan"), {
                     tanggal, 
                     nosj,
@@ -860,7 +1037,6 @@
                 });
             }
 
-            // Kosongkan form input setelah simpan tanpa menutup tampilannya
             document.getElementById(`editAngkutanId-${proyekId}`).value = '';
             document.getElementById(`form-title-${proyekId}`).textContent = `Input Data Angkutan untuk Proyek`;
             document.getElementById(`angNosj-${proyekId}`).value = '';
@@ -877,7 +1053,6 @@
             }
         };
 
-        // Fungsi Download Laporan Excel per Proyek
         window.downloadProyekReport = (proyekId) => {
             const proyek = proyekData.find(p => p.id === proyekId);
             if (!proyek) return alert('Proyek tidak ditemukan!');
