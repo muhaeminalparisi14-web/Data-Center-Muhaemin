@@ -615,6 +615,16 @@
         };
 
         function renderProyekTable() {
+            // Simpan status form/detail yang sedang terbuka sebelum render ulang
+            const openForms = {};
+            const openDetails = {};
+            proyekData.forEach(item => {
+                const f = document.getElementById(`form-input-${item.id}`);
+                const d = document.getElementById(`detail-${item.id}`);
+                if (f && !f.classList.contains('d-none')) openForms[item.id] = true;
+                if (d && !d.classList.contains('d-none')) openDetails[item.id] = true;
+            });
+
             const tbody = document.getElementById('tableBodyProyek');
             tbody.innerHTML = '';
             if (proyekData.length === 0) return tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b;">Belum ada data proyek.</td></tr>`;
@@ -651,15 +661,16 @@
                             <button class="btn-delete" onclick="window.deleteProyek('${item.id}', '${item.nama}')">Hapus</button>
                         </td>
                     </tr>
-                    <tr id="detail-${item.id}" class="d-none">
+                    <tr id="detail-${item.id}" class="${openDetails[item.id] ? '' : 'd-none'}">
                         <td colspan="6" style="background-color: #f8fafc; padding: 1.5rem;">
                             
                             <!-- Form Input / Edit Angkutan Khusus Kapal Ini -->
-                            <div id="form-input-${item.id}" class="d-none" style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #cbd5e1;">
+                            <div id="form-input-${item.id}" class="${openForms[item.id] ? '' : 'd-none'}" style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #cbd5e1;">
                                 <div id="form-title-${item.id}" style="font-weight: 600; margin-bottom: 1rem; color: #4f46e5;">Input Data Angkutan untuk: ${item.nama}</div>
                                 <input type="hidden" id="editAngkutanId-${item.id}" value="">
                                 <div class="form-grid">
                                     <div><label>Tanggal</label><input type="date" id="angTgl-${item.id}" class="form-control"></div>
+                                    <div><label>No. SJ</label><input type="text" id="angNosj-${item.id}" class="form-control" placeholder="Contoh: SJ-001"></div>
                                     <div><label>Nomor Polisi</label><input type="text" id="angNopol-${item.id}" class="form-control" placeholder="B 1234 XYZ"></div>
                                     <div><label>Vendor</label><input type="text" id="angVendor-${item.id}" class="form-control" placeholder="PT Maju Jaya"></div>
                                     <div><label>Jumlah Pcs</label><input type="number" id="angPcs-${item.id}" class="form-control" placeholder="50"></div>
@@ -707,6 +718,7 @@
                                         <tr style="background: #e2e8f0;">
                                             <th style="padding: 0.75rem;">No</th>
                                             <th style="padding: 0.75rem;">Tanggal</th>
+                                            <th style="padding: 0.75rem;">No. SJ</th>
                                             <th style="padding: 0.75rem;">Nomor Polisi</th>
                                             <th style="padding: 0.75rem;">Vendor</th>
                                             <th style="padding: 0.75rem;">Jumlah Pcs</th>
@@ -715,17 +727,18 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${angkutanProyek.length === 0 ? `<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 1rem;">Belum ada data angkutan pada proyek ini.</td></tr>` : 
+                                        ${angkutanProyek.length === 0 ? `<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 1rem;">Belum ada data angkutan pada proyek ini.</td></tr>` : 
                                             angkutanProyek.map((ang, idx) => `
                                                 <tr>
                                                     <td style="padding: 0.75rem;">${idx + 1}</td>
                                                     <td style="padding: 0.75rem;">${ang.tanggal}</td>
+                                                    <td style="padding: 0.75rem;">${ang.nosj || '-'}</td>
                                                     <td style="padding: 0.75rem;"><strong>${ang.nopol}</strong></td>
                                                     <td style="padding: 0.75rem;">${ang.vendor}</td>
                                                     <td style="padding: 0.75rem;">${ang.pcs || 0}</td>
                                                     <td style="padding: 0.75rem;">${ang.tonase}</td>
                                                     <td style="padding: 0.75rem; display: flex; gap: 0.4rem;">
-                                                        <button class="btn-edit" onclick="window.editAngkutan('${item.id}', '${ang.id}', '${ang.tanggal}', '${ang.nopol}', '${ang.vendor}', '${ang.pcs || 0}', '${ang.tonase}')">Edit</button>
+                                                        <button class="btn-edit" onclick="window.editAngkutan('${item.id}', '${ang.id}', '${ang.tanggal}', '${ang.nosj || ''}', '${ang.nopol}', '${ang.vendor}', '${ang.pcs || 0}', '${ang.tonase}')">Edit</button>
                                                         <button class="btn-delete" onclick="window.deleteAngkutan('${ang.id}', '${ang.nopol}')">Hapus</button>
                                                     </td>
                                                 </tr>
@@ -746,21 +759,24 @@
                 rowDetail.classList.remove('d-none');
                 formDiv.classList.toggle('d-none');
                 
-                // Reset form ke mode input baru jika sedang dibuka
+                // Jika form baru dibuka lewat tombol '+ Input Angkutan', pastikan mode-nya reset ke tambah baru
                 if(!formDiv.classList.contains('d-none')) {
-                    document.getElementById(`editAngkutanId-${proyekId}`).value = '';
-                    document.getElementById(`form-title-${proyekId}`).textContent = `Input Data Angkutan untuk Proyek`;
-                    document.getElementById(`angTgl-${proyekId}`).value = '';
-                    document.getElementById(`angNopol-${proyekId}`).value = '';
-                    document.getElementById(`angVendor-${proyekId}`).value = '';
-                    document.getElementById(`angPcs-${proyekId}`).value = '';
-                    document.getElementById(`angTonase-${proyekId}`).value = '';
-                    document.getElementById(`btnCancelEdit-${proyekId}`).style.display = 'none';
+                    const editIdField = document.getElementById(`editAngkutanId-${proyekId}`);
+                    if (!editIdField.value) {
+                        document.getElementById(`form-title-${proyekId}`).textContent = `Input Data Angkutan untuk Proyek`;
+                        document.getElementById(`angTgl-${proyekId}`).value = '';
+                        document.getElementById(`angNosj-${proyekId}`).value = '';
+                        document.getElementById(`angNopol-${proyekId}`).value = '';
+                        document.getElementById(`angVendor-${proyekId}`).value = '';
+                        document.getElementById(`angPcs-${proyekId}`).value = '';
+                        document.getElementById(`angTonase-${proyekId}`).value = '';
+                        document.getElementById(`btnCancelEdit-${proyekId}`).style.display = 'none';
+                    }
                 }
             }
         };
 
-        window.editAngkutan = (proyekId, angId, tanggal, nopol, vendor, pcs, tonase) => {
+        window.editAngkutan = (proyekId, angId, tanggal, nosj, nopol, vendor, pcs, tonase) => {
             const rowDetail = document.getElementById(`detail-${proyekId}`);
             const formDiv = document.getElementById(`form-input-${proyekId}`);
             
@@ -770,6 +786,7 @@
             document.getElementById(`editAngkutanId-${proyekId}`).value = angId;
             document.getElementById(`form-title-${proyekId}`).textContent = `Edit Data Angkutan (${nopol})`;
             document.getElementById(`angTgl-${proyekId}`).value = tanggal;
+            document.getElementById(`angNosj-${proyekId}`).value = nosj;
             document.getElementById(`angNopol-${proyekId}`).value = nopol;
             document.getElementById(`angVendor-${proyekId}`).value = vendor;
             document.getElementById(`angPcs-${proyekId}`).value = pcs;
@@ -783,6 +800,7 @@
             document.getElementById(`editAngkutanId-${proyekId}`).value = '';
             document.getElementById(`form-title-${proyekId}`).textContent = `Input Data Angkutan untuk Proyek`;
             document.getElementById(`angTgl-${proyekId}`).value = '';
+            document.getElementById(`angNosj-${proyekId}`).value = '';
             document.getElementById(`angNopol-${proyekId}`).value = '';
             document.getElementById(`angVendor-${proyekId}`).value = '';
             document.getElementById(`angPcs-${proyekId}`).value = '';
@@ -794,6 +812,7 @@
         window.submitAngkutan = async (proyekId) => {
             const editId = document.getElementById(`editAngkutanId-${proyekId}`).value;
             const tanggal = document.getElementById(`angTgl-${proyekId}`).value;
+            const nosj = document.getElementById(`angNosj-${proyekId}`).value.trim();
             const nopol = document.getElementById(`angNopol-${proyekId}`).value.trim();
             const vendor = document.getElementById(`angVendor-${proyekId}`).value.trim();
             const pcsAngkutan = Number(document.getElementById(`angPcs-${proyekId}`).value) || 0;
@@ -807,18 +826,20 @@
             if (!selectedProyek) return alert('Proyek tidak valid!');
 
             if (editId) {
-                // Update Data Eksisting
+                // Update Data Eksisting (tanpa alert)
                 await updateDoc(doc(db, "angkutan", editId), {
                     tanggal,
+                    nosj,
                     nopol,
                     vendor,
                     pcs: pcsAngkutan,
                     tonase: tonaseAngkutan
                 });
             } else {
-                // Tambah Data Baru
+                // Tambah Data Baru (tanpa alert)
                 await addDoc(collection(db, "angkutan"), {
                     tanggal, 
+                    nosj,
                     proyekId: selectedProyek.id, 
                     proyek: selectedProyek.nama, 
                     nopol, 
@@ -829,7 +850,15 @@
                 });
             }
 
-            window.cancelEditAngkutan(proyekId);
+            // Kosongkan form input setelah simpan tanpa menutup tampilannya
+            document.getElementById(`editAngkutanId-${proyekId}`).value = '';
+            document.getElementById(`form-title-${proyekId}`).textContent = `Input Data Angkutan untuk Proyek`;
+            document.getElementById(`angNosj-${proyekId}`).value = '';
+            document.getElementById(`angNopol-${proyekId}`).value = '';
+            document.getElementById(`angVendor-${proyekId}`).value = '';
+            document.getElementById(`angPcs-${proyekId}`).value = '';
+            document.getElementById(`angTonase-${proyekId}`).value = '';
+            document.getElementById(`btnCancelEdit-${proyekId}`).style.display = 'none';
         };
 
         window.deleteAngkutan = async (id, nopol) => { 
@@ -849,6 +878,7 @@
             const sheetData = angkutanProyek.map((item, index) => ({
                 No: index + 1,
                 Tanggal: item.tanggal,
+                'No. SJ': item.nosj || '-',
                 'Nomor Polisi': item.nopol || '-',
                 Vendor: item.vendor || '-',
                 'Jumlah Pcs': Number(item.pcs || 0),
