@@ -795,7 +795,7 @@
             }
         };
 
-        // Fungsi Download Berita Acara (BA) Vendor dengan Total Trip/Pcs/Tonase di bawah list & Tanda Tangan Kiri
+        // Fungsi Download Berita Acara (BA) Vendor dengan Tanggal Format Cilegon di atas PT Krakatau Bandar Samudera
         window.downloadBA = (proyekId, vendorName, format) => {
             const proyek = proyekData.find(p => p.id === proyekId);
             if (!proyek) return alert('Proyek tidak ditemukan!');
@@ -805,6 +805,11 @@
 
             const totalPcs = angkutanVendor.reduce((sum, curr) => sum + Number(curr.pcs || 0), 0);
             const totalTonase = angkutanVendor.reduce((sum, curr) => sum + Number(curr.tonase || 0), 0);
+            
+            // Format Tanggal: Cilegon, 6 Juni 2026
+            const monthsIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const now = new Date();
+            const formattedDateStr = `Cilegon, ${now.getDate()} ${monthsIndo[now.getMonth()]} ${now.getFullYear()}`;
 
             if (format === 'excel') {
                 const wsData = [
@@ -814,7 +819,7 @@
                     ["Nama Kapal:", proyek.nama],
                     ["Jenis Cargo:", proyek.cargo || "-"],
                     ["Nama Vendor:", vendorName],
-                    ["Tanggal Cetak:", new Date().toLocaleDateString('id-ID')],
+                    ["Tanggal Cetak:", formattedDateStr],
                     [],
                     ["RINGKASAN"],
                     ["Indikator", "Total"],
@@ -843,6 +848,7 @@
                 wsData.push(["", "", "", "", "Total Pcs:", totalPcs]);
                 wsData.push(["", "", "", "", "Total Tonase:", Number(totalTonase.toFixed(3))]);
                 wsData.push([]);
+                wsData.push([formattedDateStr]);
                 wsData.push(["PT KRAKATAU BANDAR SAMUDERA"]);
                 wsData.push(["Dibuat / Disetujui Oleh,"]);
                 wsData.push([]);
@@ -871,7 +877,7 @@
                 doc.text(`Nama Kapal    : ${proyek.nama}`, 14, 38);
                 doc.text(`Jenis Cargo   : ${proyek.cargo || "-"}`, 14, 44);
                 doc.text(`Nama Vendor   : ${vendorName}`, 14, 50);
-                doc.text(`Tanggal Cetak : ${new Date().toLocaleDateString('id-ID')}`, 14, 56);
+                doc.text(`Tanggal Cetak : ${formattedDateStr}`, 14, 56);
 
                 doc.setFontSize(12);
                 doc.text("RINGKASAN REKAPITULASI", 14, 68);
@@ -923,11 +929,12 @@
                 doc.text(`Total Pcs      : ${totalPcs} Pcs`, 14, finalY + 6);
                 doc.text(`Total Tonase : ${totalTonase.toFixed(3)} Ton`, 14, finalY + 12);
 
-                // Tanda Tangan di sebelah kiri bawah di bawah total rekapitulasi
+                // Tanda Tangan di sebelah kiri bawah di bawah total rekapitulasi (Tanggal di atas PT Krakatau Bandar Samudera)
                 doc.setFont("helvetica", "normal");
-                doc.text("PT KRAKATAU BANDAR SAMUDERA", 14, finalY + 26);
-                doc.text("Dibuat / Disetujui Oleh,", 14, finalY + 32);
-                doc.text("( .................................................... )", 14, finalY + 62);
+                doc.text(formattedDateStr, 14, finalY + 26);
+                doc.text("PT KRAKATAU BANDAR SAMUDERA", 14, finalY + 32);
+                doc.text("Dibuat / Disetujui Oleh,", 14, finalY + 38);
+                doc.text("( .................................................... )", 14, finalY + 68);
 
                 const safeVendor = vendorName.replace(/[^a-zA-Z0-9]/g, '_');
                 const safeProyek = proyek.nama.replace(/[^a-zA-Z0-9]/g, '_');
